@@ -38,14 +38,20 @@ This project uses [mise](https://mise.jdx.dev/) to manage the Node.js and pnpm v
 mise install
 ```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`            | Installs dependencies                            |
-| `pnpm dev`                | Starts local dev server at `localhost:4321`      |
-| `pnpm build`              | Build your production site to `./dist/`          |
-| `pnpm preview`             | Preview your build locally, before deploying     |
-| `pnpm astro ...`           | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help`     | Get help using the Astro CLI                     |
+| Command                | Action                                           |
+| :--------------------- | :----------------------------------------------- |
+| `pnpm install`         | Installs dependencies                            |
+| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
+| `pnpm build`           | Build your production site to `./dist/`          |
+| `pnpm preview`         | Preview your build locally, before deploying     |
+| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+| `pnpm format`          | Format the project with Oxfmt                    |
+| `pnpm format:check`    | Check formatting without changing files          |
+| `pnpm lint`            | Lint the project with Oxlint                     |
+| `pnpm lint:fix`        | Apply safe Oxlint fixes                          |
+
+Oxfmt と Oxlint の設定は TypeScript 形式（`oxfmt.config.ts` / `oxlint.config.ts`）で管理しています。`tsconfig.json` は Astro と TypeScript が自動検出するため、JSON 形式のまま使用します。
 
 ## 👀 Want to learn more?
 
