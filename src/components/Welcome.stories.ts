@@ -1,8 +1,10 @@
 import Welcome from './Welcome.astro';
 
-export default {
+const meta = {
 	title: 'Components/Welcome',
 	component: Welcome,
 };
+
+export default meta;
 
 export const Default = {};
