@@ -1,18 +1,26 @@
 {
-  "name": "my-tech-blog",
-  "type": "module",
-  "version": "0.0.1",
-  "packageManager": "pnpm@11.2.2",
-  "engines": {
-    "node": ">=22.12.0"
-  },
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
-  "dependencies": {
-    "astro": "^7.1.1"
-  }
+	"name": "my-tech-blog",
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"astro": "astro",
+		"format": "oxfmt .",
+		"format:check": "oxfmt --check .",
+		"lint": "oxlint .",
+		"lint:fix": "oxlint --fix ."
+	},
+	"dependencies": {
+		"astro": "^7.1.1"
+	},
+	"devDependencies": {
+		"oxfmt": "^0.59.0",
+		"oxlint": "^1.74.0"
+	},
+	"engines": {
+		"node": ">=22.12.0"
+	},
+	"packageManager": "pnpm@11.2.2"
 }
