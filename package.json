@@ -6,6 +6,8 @@
 		"dev": "astro dev",
 		"build": "astro build",
 		"preview": "astro preview",
+		"storybook": "storybook dev -p 6006",
+		"build-storybook": "storybook build",
 		"astro": "astro",
 		"format": "oxfmt .",
 		"format:check": "oxfmt --check .",
@@ -16,8 +18,11 @@
 		"astro": "^7.1.1"
 	},
 	"devDependencies": {
+		"@storybook-astro/framework": "^1.8.0",
+		"@storybook/builder-vite": "^10.5.2",
 		"oxfmt": "^0.59.0",
-		"oxlint": "^1.74.0"
+		"oxlint": "^1.74.0",
+		"storybook": "^10.5.2"
 	},
 	"engines": {
 		"node": ">=22.12.0"
