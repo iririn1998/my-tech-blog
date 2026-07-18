@@ -32,6 +32,12 @@ To learn more about the folder structure of an Astro project, refer to [our guid
 
 All commands are run from the root of the project, from a terminal:
 
+This project uses [mise](https://mise.jdx.dev/) to manage the Node.js and pnpm versions:
+
+```sh
+mise install
+```
+
 | Command                   | Action                                           |
 | :------------------------ | :----------------------------------------------- |
 | `pnpm install`            | Installs dependencies                            |
