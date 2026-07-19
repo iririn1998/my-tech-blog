@@ -1,0 +1,98 @@
+---
+/**
+ * トップページの特集記事セクション。テキスト 7 : 写真 5 の2カラム。
+ */
+interface Props {
+	title: string;
+	excerpt: string;
+	tag: string;
+	href: string;
+	imageSrc?: string;
+}
+
+import CmykFigure from '../CmykFigure.astro';
+import Tag from '../Tag.astro';
+
+const { title, excerpt, tag, href, imageSrc } = Astro.props;
+---
+
+<section aria-label="特集記事" class="featured">
+	<article>
+		<div class="tags">
+			<Tag variant="accent">{tag}</Tag>
+			<Tag variant="neutral">特集</Tag>
+		</div>
+		<h2><a href={href}>{title}</a></h2>
+		<p class="excerpt">{excerpt}</p>
+		<p class="more"><a class="btn" href={href}>続きを読む</a></p>
+	</article>
+	<CmykFigure aspectRatio="3 / 2" placeholder="特集記事の写真" src={imageSrc} alt={imageSrc ? title : ''} />
+</section>
+
+<style>
+	.featured {
+		display: grid;
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+		gap: 28px clamp(28px, 5vw, 80px);
+		align-items: center;
+		padding: 42px 0 56px;
+	}
+
+	@media (max-width: 800px) {
+		.featured {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	.tags {
+		display: flex;
+		gap: var(--space-2);
+		margin: 0 0 16px;
+	}
+
+	h2 {
+		font-size: clamp(30px, 3.4vw, 42px);
+		line-height: 1.25;
+		letter-spacing: -0.015em;
+		margin: 0;
+	}
+
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	h2 a:hover {
+		color: var(--color-accent-700);
+	}
+
+	.excerpt {
+		font-size: 15.5px;
+		line-height: 28px;
+		margin: 18px 0 0;
+		max-width: 40em;
+		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+		text-align: justify;
+	}
+
+	.more {
+		margin: 28px 0 0;
+	}
+
+	.btn {
+		display: inline-block;
+		font-family: var(--font-heading);
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--color-text);
+		text-decoration: none;
+		padding: 10px 20px;
+		border: 1px solid color-mix(in srgb, var(--color-text) 60%, transparent);
+		border-radius: var(--radius-sm);
+	}
+
+	.btn:hover {
+		color: var(--color-accent-700);
+		border-color: var(--color-accent-700);
+	}
+</style>

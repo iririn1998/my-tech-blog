@@ -1,0 +1,73 @@
+---
+/**
+ * トップページのヒーロー。CMYK 4版重ねのサイトタイトル + リード文。
+ */
+---
+
+<header class="hero">
+	<h1>
+		<span class="cmyk-head">
+			<span class="paper">Web技報</span>
+			<span class="plate plate-c" aria-hidden="true">Web技報</span>
+			<span class="plate plate-m" aria-hidden="true">Web技報</span>
+			<span class="plate plate-y" aria-hidden="true">Web技報</span>
+		</span>
+	</h1>
+	<p>
+		Webフロントエンドを中心とした、個人の技術記録。試したこと、つまずいたこと、直したことを毎週書き留めています。
+	</p>
+</header>
+
+<style>
+	.hero {
+		padding: 56px 0 42px;
+	}
+
+	h1 {
+		font-size: clamp(44px, 6vw, 76px);
+		line-height: 1.08;
+		letter-spacing: -0.02em;
+		margin: 0 0 0 -0.035em;
+	}
+
+	.cmyk-head {
+		position: relative;
+		display: inline-block;
+	}
+
+	.paper {
+		position: relative;
+		z-index: 2;
+		color: var(--color-text);
+	}
+
+	.plate {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		mix-blend-mode: multiply;
+	}
+
+	.plate-c {
+		color: var(--color-plate-c);
+		transform: translate(3px, 2px);
+	}
+
+	.plate-m {
+		color: var(--color-plate-m);
+		transform: translate(-2px, 2px);
+	}
+
+	.plate-y {
+		color: var(--color-plate-y);
+		transform: translate(2px, -2px);
+	}
+
+	p {
+		font-size: 16px;
+		line-height: 28px;
+		margin: 20px 0 0;
+		max-width: 44em;
+		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+	}
+</style>

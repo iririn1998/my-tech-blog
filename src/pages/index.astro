@@ -1,11 +1,69 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import ArticleCard from '../components/ArticleCard.astro';
+import FeaturedArticle from '../components/home/FeaturedArticle.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import SectionLabel from '../components/SectionLabel.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const featured = posts.find((post) => post.data.featured) ?? posts[0];
+const latest = posts.filter((post) => post.id !== featured.id);
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout
+	title="Web技報 — 個人の技術記録"
+	description="Webフロントエンドを中心とした、個人の技術記録。試したこと、つまずいたこと、直したことを毎週書き留めています。"
+>
+	<HomeHero />
+	<FeaturedArticle
+		title={featured.data.title}
+		excerpt={featured.data.excerpt}
+		tag={featured.data.tags[0]}
+		href={`/posts/${featured.id}/`}
+	/>
+	<section aria-labelledby="latest-heading" class="latest">
+		<div class="label-wrap">
+			<SectionLabel as="h2" id="latest-heading">最新の記事</SectionLabel>
+		</div>
+		<div class="grid">
+			{
+				latest.map((post) => (
+					<ArticleCard
+						title={post.data.title}
+						excerpt={post.data.excerpt}
+						tag={post.data.tags[0]}
+						href={`/posts/${post.id}/`}
+					/>
+				))
+			}
+		</div>
+		<p class="tags-link"><a href="/tags/">タグから探す →</a></p>
+	</section>
+</BaseLayout>
+
+<style>
+	.latest {
+		padding: 14px 0 70px;
+	}
+
+	.label-wrap {
+		margin: 0 0 24px;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: 42px clamp(28px, 4vw, 64px);
+	}
+
+	.tags-link {
+		margin: 42px 0 0;
+	}
+
+	.tags-link a {
+		font-size: 14.5px;
+	}
+</style>
