@@ -1,0 +1,86 @@
+---
+/**
+ * 「テキスト ……… 右端値」の点線リーダー行。
+ * 目次 / タグ別一覧 / About の経歴・連絡先で共用。
+ * 右端値は trailing スロットで渡し、細かい装飾は呼び出し側のスコープで行う。
+ */
+interface Props {
+	as?: 'p' | 'li' | 'div';
+	href?: string;
+	/** 右端値をアクセント色にする (目次の現在節、経歴の「現在」など) */
+	accent?: boolean;
+	size?: 'md' | 'sm';
+}
+
+const { as: Element = 'p', href, accent = false, size = 'md' }: Props = Astro.props;
+---
+
+<Element class:list={['row', `row-${size}`]}>
+	{
+		href ? (
+			<a class="label" href={href}>
+				<slot />
+			</a>
+		) : (
+			<span class="label">
+				<slot />
+			</span>
+		)
+	}
+	<span class="leader" aria-hidden="true"></span>
+	<span class:list={['trailing', { accent }]}><slot name="trailing" /></span>
+</Element>
+
+<style>
+	.row {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		margin: 0;
+	}
+
+	.row-md {
+		font-size: 15.5px;
+		line-height: 28px;
+	}
+
+	.row-sm {
+		font-size: 14.5px;
+		line-height: 24px;
+	}
+
+	.label {
+		min-width: 0;
+		color: inherit;
+		overflow-wrap: anywhere;
+	}
+
+	a.label {
+		text-decoration: none;
+	}
+
+	a.label:hover {
+		color: var(--color-accent-700);
+	}
+
+	.leader {
+		flex: 1;
+		min-width: 28px;
+		align-self: flex-end;
+		margin-bottom: 0.34em;
+		border-bottom: 1px dotted color-mix(in srgb, var(--color-text) 45%, transparent);
+	}
+
+	.row-sm .leader {
+		min-width: 20px;
+	}
+
+	.trailing {
+		flex: none;
+		font-feature-settings: 'tnum' 1;
+	}
+
+	.trailing.accent {
+		color: var(--color-accent-700);
+	}
+</style>

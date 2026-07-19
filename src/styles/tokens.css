@@ -1,0 +1,34 @@
+/*
+ * デザイントークン — claude_design (broadsheet 新聞紙面調) の近似値。
+ * 元デザインシステムの styles.css が未共有のため、プレビューの印象から採色。
+ */
+:root {
+	/* 紙面 */
+	--color-paper: #f8f4ea;
+	--color-text: #211d1a;
+
+	/* アクセント (朱色) */
+	--color-accent-600: #c8502e;
+	--color-accent-700: #b03d20;
+
+	/* 第2アクセント (コード文字列などの深緑) */
+	--color-accent-2-700: #23695a;
+
+	/* ニュートラル */
+	--color-neutral-100: #eee8da;
+	--color-neutral-500: #8f8878;
+
+	/* CMYK 版色 (版ズレ表現用) */
+	--color-plate-c: #00aeef;
+	--color-plate-m: #ec008c;
+	--color-plate-y: #f0cf00;
+
+	/* 形状・余白 */
+	--radius-sm: 3px;
+	--space-2: 8px;
+
+	/* フォント */
+	--font-heading: 'Source Serif 4', 'Noto Serif JP', serif;
+	--font-body: 'Source Serif 4', 'Noto Serif JP', serif;
+	--font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}

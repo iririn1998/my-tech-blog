@@ -1,5 +1,10 @@
-export default {
+import type { Preview } from '@storybook-astro/framework';
+import '../src/styles/global.css';
+
+const preview: Preview = {
 	parameters: {
-		layout: 'fullscreen',
+		layout: 'padded',
 	},
 };
+
+export default preview;

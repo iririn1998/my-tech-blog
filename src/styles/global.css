@@ -1,0 +1,40 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-padding-top: 24px;
+}
+
+body {
+	margin: 0;
+	min-width: 320px;
+	background: var(--color-paper);
+	color: var(--color-text);
+	font-family: var(--font-body);
+	text-wrap: pretty;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-family: var(--font-heading);
+}
+
+a {
+	color: var(--color-accent-700);
+}
+
+a:hover {
+	color: var(--color-accent-600);
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-accent-700);
+	outline-offset: 3px;
+}

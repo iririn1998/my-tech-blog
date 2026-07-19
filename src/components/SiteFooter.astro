@@ -1,0 +1,17 @@
+---
+/**
+ * サイト共通フッター。
+ */
+const year = new Date().getFullYear();
+---
+
+<footer>© {year} Web技報 — 個人の技術記録。記載内容は執筆時点のものです。</footer>
+
+<style>
+	footer {
+		padding: 42px 0 56px;
+		font-size: 12.5px;
+		line-height: 24px;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+</style>

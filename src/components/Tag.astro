@@ -1,0 +1,65 @@
+---
+/**
+ * タグチップ。3バリアント + 任意でリンク化。
+ */
+interface Props {
+	variant?: 'accent' | 'outline' | 'neutral';
+	href?: string;
+}
+
+const { variant = 'outline', href } = Astro.props;
+---
+
+{
+	href ? (
+		<a class="tag-link" href={href}>
+			<span class:list={['tag', `tag-${variant}`]}>
+				<slot />
+			</span>
+		</a>
+	) : (
+		<span class:list={['tag', `tag-${variant}`]}>
+			<slot />
+		</span>
+	)
+}
+
+<style>
+	.tag-link {
+		text-decoration: none;
+	}
+
+	.tag {
+		display: inline-flex;
+		align-items: center;
+		font-family: var(--font-heading);
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1;
+		letter-spacing: 0.06em;
+		padding: 5px 10px;
+		border-radius: var(--radius-sm);
+		white-space: nowrap;
+	}
+
+	.tag-accent {
+		background: var(--color-accent-700);
+		color: var(--color-paper);
+	}
+
+	.tag-outline {
+		padding: 4px 9px;
+		border: 1px solid color-mix(in srgb, var(--color-text) 45%, transparent);
+		color: var(--color-text);
+	}
+
+	.tag-neutral {
+		background: var(--color-neutral-100);
+		color: var(--color-text);
+	}
+
+	.tag-link:hover .tag-outline {
+		border-color: var(--color-accent-700);
+		color: var(--color-accent-700);
+	}
+</style>
