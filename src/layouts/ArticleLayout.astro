@@ -1,0 +1,116 @@
+---
+/**
+ * 記事ページのレイアウト。本文 + sticky 目次の2カラム。
+ * 本文 (Markdown レンダリング結果) は default スロットで受け取る。
+ */
+import ArticleHeader from '../components/article/ArticleHeader.astro';
+import TableOfContents from '../components/article/TableOfContents.astro';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+	title: string;
+	excerpt?: string;
+	date: Date | string;
+	tags: string[];
+	headings?: { slug: string; text: string }[];
+	showToc?: boolean;
+}
+
+const { title, excerpt, date, tags, headings = [], showToc = true } = Astro.props;
+const hasToc = showToc && headings.length > 0;
+---
+
+<BaseLayout title={`${title} | Web技報`} description={excerpt}>
+	<ArticleHeader title={title} date={date} tags={tags} />
+	<div class:list={['grid', { 'with-toc': hasToc }]}>
+		{hasToc && <div class="toc-wrap"><TableOfContents headings={headings} /></div>}
+		<article class="article-body">
+			<slot />
+			<p class="back"><a href="/">← トップへ戻る</a></p>
+		</article>
+	</div>
+</BaseLayout>
+
+<style>
+	.grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 28px clamp(40px, 5vw, 96px);
+		align-items: start;
+		padding: 28px 0 70px;
+	}
+
+	.grid.with-toc {
+		grid-template-columns: minmax(0, 1fr) 260px;
+		grid-template-areas: 'article toc';
+	}
+
+	.article-body {
+		grid-area: article;
+	}
+
+	.toc-wrap {
+		grid-area: toc;
+	}
+
+	@media (max-width: 900px) {
+		.grid.with-toc {
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-areas:
+				'toc'
+				'article';
+		}
+	}
+
+	.article-body {
+		max-width: 40em;
+		font-size: 16px;
+		line-height: 32px;
+	}
+
+	.article-body :global(p) {
+		margin: 20px 0 0;
+		text-align: justify;
+	}
+
+	.article-body :global(p:first-child) {
+		margin-top: 0;
+	}
+
+	.article-body :global(h2) {
+		font-size: 24px;
+		line-height: 1.4;
+		margin: 56px 0 0;
+	}
+
+	.article-body :global(pre) {
+		font-family: var(--font-mono);
+		font-size: 13.5px;
+		line-height: 24px;
+		background: var(--color-neutral-100) !important;
+		padding: 24px 28px;
+		border-radius: var(--radius-sm);
+		overflow-x: auto;
+		margin: 28px 0 0;
+	}
+
+	.article-body :global(pre + p) {
+		margin-top: 28px;
+	}
+
+	.article-body :global(:not(pre) > code) {
+		font-family: var(--font-mono);
+		font-size: 14px;
+		background: var(--color-neutral-100);
+		padding: 2px 6px;
+		border-radius: var(--radius-sm);
+	}
+
+	.back {
+		margin: 56px 0 0;
+	}
+
+	.back a {
+		font-size: 14.5px;
+	}
+</style>

@@ -1,0 +1,59 @@
+---
+/**
+ * 記事ページの目次。デスクトップでは sticky 配置し、節番号を表示する。
+ */
+interface Props {
+	headings: { slug: string; text: string }[];
+}
+
+import LeaderRow from '../LeaderRow.astro';
+import SectionLabel from '../SectionLabel.astro';
+
+const { headings } = Astro.props;
+---
+
+<aside aria-label="目次" class="toc">
+	<div class="label-wrap"><SectionLabel as="h2">目次</SectionLabel></div>
+	<ol>
+		{
+				headings.map((heading, i) => (
+					<LeaderRow as="li" size="sm" href={`#${heading.slug}`}>
+					{heading.text}
+					<span slot="trailing" class="num">
+						{i + 1}
+					</span>
+				</LeaderRow>
+			))
+		}
+	</ol>
+</aside>
+
+<style>
+	.toc {
+		position: sticky;
+		top: 28px;
+	}
+
+	@media (max-width: 900px) {
+		.toc {
+			position: static;
+		}
+	}
+
+	.label-wrap {
+		margin: 0 0 18px;
+	}
+
+	ol {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 12px;
+	}
+
+	.num {
+		font-family: var(--font-heading);
+		font-weight: 600;
+	}
+</style>
