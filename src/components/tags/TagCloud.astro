@@ -1,0 +1,32 @@
+---
+/**
+ * タグ別一覧ページ上部のタグチップ群。ページ内アンカーへリンクする。
+ * 先頭 (最新記事のタグ) をアクセント表示。
+ */
+interface Props {
+	tags: { name: string; count: number }[];
+}
+
+import Tag from '../Tag.astro';
+import { getTagId } from '../../utils/tag';
+
+const { tags } = Astro.props;
+---
+
+<div class="cloud">
+	{
+			tags.map((tag, i) => (
+				<Tag variant={i === 0 ? 'accent' : 'outline'} href={`#${getTagId(tag.name)}`}>
+					{`${tag.name} ${tag.count}`}
+				</Tag>
+		))
+	}
+</div>
+
+<style>
+	.cloud {
+		display: flex;
+		gap: var(--space-2);
+		flex-wrap: wrap;
+	}
+</style>

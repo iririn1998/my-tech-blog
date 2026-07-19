@@ -1,0 +1,86 @@
+---
+import { getCollection } from 'astro:content';
+import TagCloud from '../../components/tags/TagCloud.astro';
+import TagSection from '../../components/tags/TagSection.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { formatIsoDate, formatShortDate } from '../../utils/date';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+// 記事の新しい順にタグを収集 (最新記事のタグが先頭になる)
+const tagMap = new Map<string, typeof posts>();
+for (const post of posts) {
+	for (const tag of post.data.tags) {
+		const entries = tagMap.get(tag) ?? [];
+		entries.push(post);
+		tagMap.set(tag, entries);
+	}
+}
+
+const tags = [...tagMap.entries()].map(([name, entries]) => ({
+	name,
+	count: entries.length,
+		posts: entries.map((post) => ({
+			title: post.data.title,
+			href: `/posts/${post.id}/`,
+			dateLabel: formatShortDate(post.data.pubDate),
+			datetime: formatIsoDate(post.data.pubDate),
+		})),
+}));
+---
+
+<BaseLayout title="タグ別一覧 | Web技報" description="記事をタグ別に整理しています。">
+	<header>
+		<h1>タグ別一覧</h1>
+		<p>
+			全{posts.length}記事を{tags.length}のタグで整理しています。タグをクリックすると該当の節へ移動します。
+		</p>
+		<div class="cloud-wrap">
+			<TagCloud tags={tags} />
+		</div>
+	</header>
+	<div class="grid">
+		{tags.map((tag) => <TagSection name={tag.name} posts={tag.posts} />)}
+	</div>
+</BaseLayout>
+
+<style>
+	header {
+		padding: 56px 0 42px;
+	}
+
+	h1 {
+		font-size: clamp(32px, 4vw, 48px);
+		line-height: 1.2;
+		letter-spacing: -0.015em;
+		margin: 0;
+	}
+
+	header p {
+		font-size: 15.5px;
+		line-height: 28px;
+		margin: 18px 0 0;
+		max-width: 44em;
+		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+	}
+
+	.cloud-wrap {
+		margin: 28px 0 0;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+		gap: 56px clamp(40px, 5vw, 96px);
+		padding: 14px 0 70px;
+		align-items: start;
+	}
+
+	@media (max-width: 480px) {
+		.grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+</style>

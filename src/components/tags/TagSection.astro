@@ -1,0 +1,59 @@
+---
+/**
+ * タグ別一覧ページの1タグ分の節。タグ見出し + 記事の点線リーダーリスト。
+ */
+interface Props {
+	name: string;
+	posts: { title: string; href: string; dateLabel: string; datetime: string }[];
+}
+
+import LeaderRow from '../LeaderRow.astro';
+import { getTagId } from '../../utils/tag';
+
+const { name, posts } = Astro.props;
+---
+
+<section id={getTagId(name)}>
+	<h2>
+		{name}<span class="count">{posts.length}記事</span>
+	</h2>
+	<div class="list">
+		{
+			posts.map((post) => (
+				<LeaderRow href={post.href}>
+					{post.title}
+						<time slot="trailing" class="date" datetime={post.datetime}>
+							{post.dateLabel}
+						</time>
+				</LeaderRow>
+			))
+		}
+	</div>
+</section>
+
+<style>
+	h2 {
+		display: flex;
+		align-items: baseline;
+		gap: 12px;
+		font-size: 22px;
+		line-height: 1.4;
+		margin: 0;
+	}
+
+	.count {
+		font-size: 14px;
+		font-weight: 400;
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+
+	.list {
+		display: grid;
+		gap: 12px;
+		margin: 18px 0 0;
+	}
+
+	.date {
+		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	}
+</style>
