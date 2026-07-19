@@ -12,17 +12,20 @@
 		"format": "oxfmt .",
 		"format:check": "oxfmt --check .",
 		"lint": "oxlint .",
-		"lint:fix": "oxlint --fix ."
+		"lint:fix": "oxlint --fix .",
+		"typecheck": "astro check"
 	},
 	"dependencies": {
 		"astro": "^7.1.1"
 	},
 	"devDependencies": {
+		"@astrojs/check": "^0.9.9",
 		"@storybook-astro/framework": "^1.8.0",
 		"@storybook/builder-vite": "^10.5.2",
 		"oxfmt": "^0.59.0",
 		"oxlint": "^1.74.0",
-		"storybook": "^10.5.2"
+		"storybook": "^10.5.2",
+		"typescript": "^6.0.3"
 	},
 	"engines": {
 		"node": ">=22.12.0"
