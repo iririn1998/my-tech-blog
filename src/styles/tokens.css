@@ -28,7 +28,7 @@
 	--space-2: 8px;
 
 	/* フォント */
-	--font-heading: 'Source Serif 4', 'Noto Serif JP', serif;
-	--font-body: 'Source Serif 4', 'Noto Serif JP', serif;
+	--font-heading: 'Noto Sans JP', sans-serif;
+	--font-body: 'Noto Sans JP', sans-serif;
 	--font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
