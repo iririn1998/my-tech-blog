@@ -111,10 +111,7 @@ showToc: true
 
 ## Cloudflare Workers へのデプロイ
 
-`.github/workflows/deploy.yml` により、次のタイミングで GitHub Actions から Cloudflare Workers へデプロイします。
-
-- `main` ブランチへの push
-- GitHub の **Actions > Deploy to Cloudflare Workers > Run workflow** からの手動実行
+`.github/workflows/deploy.yml` により、GitHub の **Actions > Deploy to Cloudflare Workers > Run workflow** から手動実行した場合だけ、Cloudflare Workers へデプロイします。push や pull request では実行されません。
 
 ワークフローは型チェックと lint の後に Astro をビルドし、`wrangler.jsonc` の設定を使ってデプロイします。同時に複数のデプロイが発生した場合は、最新の実行を優先します。
 
@@ -137,6 +134,6 @@ SITE_URL=https://iririn.com
 
 Environment には、デプロイ前の承認や `main` ブランチだけを許可する保護ルールも設定できます。
 
-Cloudflare Workers Builds の Git 連携も有効にすると同じ push から二重にデプロイされるため、GitHub Actions を使用する場合は Workers Builds を無効にしてください。
+Cloudflare Workers Builds の Git 連携は push を契機に自動デプロイされます。手動デプロイだけに限定する場合は Workers Builds を無効にしてください。
 
 静的アセットの出力先、Worker 名、カスタムドメインなどは `wrangler.jsonc` で管理します。ローカルから手動でデプロイする場合は `pnpm deploy` を使用できます。
