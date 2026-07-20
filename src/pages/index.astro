@@ -23,6 +23,7 @@ const latest = posts.filter((post) => post.id !== featured.id);
 		excerpt={featured.data.excerpt}
 		tag={featured.data.tags[0]}
 		href={`/posts/${featured.id}/`}
+		imageSrc="/images/mac-shortcuts-lgtm-image-maker/lgtm_image_creation.png"
 	/>
 	{
 		latest.length > 0 && (
