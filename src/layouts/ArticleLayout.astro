@@ -83,6 +83,38 @@ const hasToc = showToc && headings.length > 0;
 		margin: 56px 0 0;
 	}
 
+	.article-body :global(h3) {
+		font-size: 21px;
+		line-height: 1.5;
+		margin: 44px 0 0;
+	}
+
+	.article-body :global(h4) {
+		font-size: 18px;
+		line-height: 1.6;
+		margin: 36px 0 0;
+	}
+
+	.article-body :global(ol),
+	.article-body :global(ul) {
+		margin: 20px 0 0;
+		padding-left: 1.7em;
+	}
+
+	.article-body :global(li + li) {
+		margin-top: 8px;
+	}
+
+	.article-body :global(img) {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		margin: 28px 0 0;
+		border: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+		border-radius: var(--radius-sm);
+		background: var(--color-neutral-100);
+	}
+
 	.article-body :global(pre) {
 		font-family: var(--font-mono);
 		font-size: 13.5px;
