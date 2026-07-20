@@ -94,6 +94,7 @@ showToc: true
 
 ```text
 .
+├── .github/workflows/      # GitHub Actions のデプロイワークフロー
 ├── public/                 # 画像、favicon、Cloudflare Pages のヘッダー設定
 ├── src/
 │   ├── components/        # UI コンポーネントと Storybook stories
@@ -110,20 +111,32 @@ showToc: true
 
 ## Cloudflare Workers へのデプロイ
 
-Cloudflare Workers Builds では次の値を設定します。
+`.github/workflows/deploy.yml` により、次のタイミングで GitHub Actions から Cloudflare Workers へデプロイします。
 
-| 設定              | 値                          |
-| :---------------- | :-------------------------- |
-| Production branch | `main`                      |
-| Build command     | `pnpm run build`            |
-| Deploy command    | `pnpm exec wrangler deploy` |
+- `main` ブランチへの push
+- GitHub の **Actions > Deploy to Cloudflare Workers > Run workflow** からの手動実行
 
-静的アセットの出力先などは `wrangler.jsonc` で管理します。Wrangler の自動セットアップを避けるため、設定ファイルと依存バージョンはリポジトリに含めています。
+ワークフローは型チェックと lint の後に Astro をビルドし、`wrangler.jsonc` の設定を使ってデプロイします。同時に複数のデプロイが発生した場合は、最新の実行を優先します。
 
-本番環境の環境変数 `SITE_URL` には canonical URL とサイトマップに使用するオリジンを指定します。末尾のスラッシュは不要です。
+### GitHub の設定
+
+1. Cloudflare ダッシュボードで **Edit Cloudflare Workers** テンプレートから API トークンを作成します。対象アカウントと `iririn.com` の Zone のみにスコープを限定してください。
+2. Cloudflare ダッシュボードの Workers & Pages から Account ID を確認します。
+3. GitHub の **Settings > Environments** で `production` Environment を作成し、次の Environment secrets を登録します。
+
+| Secret 名               | 値                        |
+| :---------------------- | :------------------------ |
+| `CLOUDFLARE_API_TOKEN`  | 手順 1 で作成したトークン |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare の Account ID  |
+
+必要に応じて `production` Environment に Environment variable `SITE_URL` を追加できます。canonical URL とサイトマップに使用するオリジンを末尾のスラッシュなしで指定してください。未指定の場合は `https://iririn.com` が使用されます。
 
 ```text
 SITE_URL=https://iririn.com
 ```
 
-未指定の場合は `https://iririn.com` が使用されます。
+Environment には、デプロイ前の承認や `main` ブランチだけを許可する保護ルールも設定できます。
+
+Cloudflare Workers Builds の Git 連携も有効にすると同じ push から二重にデプロイされるため、GitHub Actions を使用する場合は Workers Builds を無効にしてください。
+
+静的アセットの出力先、Worker 名、カスタムドメインなどは `wrangler.jsonc` で管理します。ローカルから手動でデプロイする場合は `pnpm deploy` を使用できます。
