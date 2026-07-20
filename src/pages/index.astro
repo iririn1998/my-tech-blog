@@ -24,24 +24,26 @@ const latest = posts.filter((post) => post.id !== featured.id);
 		tag={featured.data.tags[0]}
 		href={`/posts/${featured.id}/`}
 	/>
-	<section aria-labelledby="latest-heading" class="latest">
-		<div class="label-wrap">
-			<SectionLabel as="h2" id="latest-heading">最新の記事</SectionLabel>
-		</div>
-		<div class="grid">
-			{
-				latest.map((post) => (
-					<ArticleCard
-						title={post.data.title}
-						excerpt={post.data.excerpt}
-						tag={post.data.tags[0]}
-						href={`/posts/${post.id}/`}
-					/>
-				))
-			}
-		</div>
-		<p class="tags-link"><a href="/tags/">タグから探す →</a></p>
-	</section>
+	{
+		latest.length > 0 && (
+			<section aria-labelledby="latest-heading" class="latest">
+				<div class="label-wrap">
+					<SectionLabel as="h2" id="latest-heading">最新の記事</SectionLabel>
+				</div>
+				<div class="grid">
+					{latest.map((post) => (
+						<ArticleCard
+							title={post.data.title}
+							excerpt={post.data.excerpt}
+							tag={post.data.tags[0]}
+							href={`/posts/${post.id}/`}
+						/>
+					))}
+				</div>
+				<p class="tags-link"><a href="/tags/">タグから探す →</a></p>
+			</section>
+		)
+	}
 </BaseLayout>
 
 <style>
