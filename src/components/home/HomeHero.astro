@@ -1,16 +1,13 @@
 ---
 /**
- * トップページのヒーロー。CMYK 4版重ねのサイトタイトル + リード文。
+ * トップページのヒーロー。サイトタイトル + リード文。
  */
 ---
 
 <header class="hero">
 	<h1>
-		<span class="cmyk-head">
-			<span class="paper">Web技報</span>
-			<span class="plate plate-c" aria-hidden="true">Web技報</span>
-			<span class="plate plate-m" aria-hidden="true">Web技報</span>
-			<span class="plate plate-y" aria-hidden="true">Web技報</span>
+		<span class="hero-title">
+			<span class="paper">いりりんご🍎web牧場</span>
 		</span>
 	</h1>
 	<p>
@@ -30,37 +27,13 @@
 		margin: 0 0 0 -0.035em;
 	}
 
-	.cmyk-head {
+	.hero-title {
 		position: relative;
 		display: inline-block;
 	}
 
 	.paper {
-		position: relative;
-		z-index: 2;
 		color: var(--color-text);
-	}
-
-	.plate {
-		position: absolute;
-		inset: 0;
-		z-index: 1;
-		mix-blend-mode: multiply;
-	}
-
-	.plate-c {
-		color: var(--color-plate-c);
-		transform: translate(3px, 2px);
-	}
-
-	.plate-m {
-		color: var(--color-plate-m);
-		transform: translate(-2px, 2px);
-	}
-
-	.plate-y {
-		color: var(--color-plate-y);
-		transform: translate(2px, -2px);
 	}
 
 	p {
