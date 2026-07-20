@@ -53,6 +53,24 @@ mise install
 
 Oxfmt と Oxlint の設定は TypeScript 形式（`oxfmt.config.ts` / `oxlint.config.ts`）で管理しています。`tsconfig.json` は Astro と TypeScript が自動検出するため、JSON 形式のまま使用します。
 
+## Cloudflare Pages
+
+Cloudflare Pages では、次の設定でデプロイします。
+
+| Setting           | Value        |
+| :---------------- | :----------- |
+| Production branch | `main`       |
+| Build command     | `pnpm build` |
+| Build output      | `dist`       |
+
+本番環境の環境変数 `SITE_URL` に、正規URLをオリジンだけ指定します。末尾のスラッシュは不要です。
+
+```text
+SITE_URL=https://example.com
+```
+
+独自ドメインを設定するまでは、未指定時の `https://my-tech-blog.pages.dev` が使用されます。
+
 ## 👀 Want to learn more?
 
 Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

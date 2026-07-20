@@ -20,7 +20,7 @@ const { title, excerpt, date, tags, headings = [], showToc = true } = Astro.prop
 const hasToc = showToc && headings.length > 0;
 ---
 
-<BaseLayout title={`${title} | Web技報`} description={excerpt}>
+<BaseLayout title={`${title} | Web技報`} description={excerpt} type="article">
 	<ArticleHeader title={title} date={date} tags={tags} />
 	<div class:list={['grid', { 'with-toc': hasToc }]}>
 		{hasToc && <div class="toc-wrap"><TableOfContents headings={headings} /></div>}

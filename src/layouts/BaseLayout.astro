@@ -6,9 +6,15 @@ import '../styles/global.css';
 interface Props {
 	title: string;
 	description?: string;
+	type?: 'website' | 'article';
 }
 
-const { title, description } = Astro.props;
+const {
+	title,
+	description = 'Webフロントエンドを中心とした、個人の技術記録。',
+	type = 'website',
+} = Astro.props;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin);
 ---
 
 <!doctype html>
@@ -18,7 +24,15 @@ const { title, description } = Astro.props;
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		{description && <meta name="description" content={description} />}
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalUrl} />
+		<meta property="og:type" content={type} />
+		<meta property="og:locale" content="ja_JP" />
+		<meta property="og:site_name" content="Web技報" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta name="twitter:card" content="summary" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
@@ -26,13 +40,13 @@ const { title, description } = Astro.props;
 			rel="stylesheet"
 		/>
 		<title>{title}</title>
-		</head>
-		<body>
-			<a class="skip-link" href="#main-content">本文へ移動</a>
-			<SiteNav />
-			<div class="container">
-				<main id="main-content"><slot /></main>
-				<SiteFooter />
+	</head>
+	<body>
+		<a class="skip-link" href="#main-content">本文へ移動</a>
+		<SiteNav />
+		<div class="container">
+			<main id="main-content"><slot /></main>
+			<SiteFooter />
 		</div>
 	</body>
 </html>
