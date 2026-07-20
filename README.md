@@ -123,7 +123,7 @@ Cloudflare Workers Builds では次の値を設定します。
 本番環境の環境変数 `SITE_URL` には canonical URL とサイトマップに使用するオリジンを指定します。末尾のスラッシュは不要です。
 
 ```text
-SITE_URL=https://example.com
+SITE_URL=https://iririn.com
 ```
 
-未指定の場合は `https://my-tech-blog.pages.dev` が使用されます。
+未指定の場合は `https://iririn.com` が使用されます。
