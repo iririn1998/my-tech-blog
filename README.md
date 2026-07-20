@@ -2,7 +2,7 @@
 
 Web フロントエンドを中心に、試したこと・つまずいたこと・直したことを記録する個人技術ブログです。
 
-Astro の Content Collections で Markdown 記事を管理し、Cloudflare Pages へ静的サイトとしてデプロイします。コンポーネントは Storybook でも確認できます。
+Astro の Content Collections で Markdown 記事を管理し、Cloudflare Workers へ静的サイトとしてデプロイします。コンポーネントは Storybook でも確認できます。
 
 ## 主な機能
 
@@ -18,7 +18,7 @@ Astro の Content Collections で Markdown 記事を管理し、Cloudflare Pages
 - [Astro Content Collections](https://docs.astro.build/en/guides/content-collections/)
 - [Storybook](https://storybook.js.org/)
 - [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) / [Oxlint](https://oxc.rs/docs/guide/usage/linter.html)
-- [Cloudflare Pages](https://pages.cloudflare.com/)
+- [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
 - [mise](https://mise.jdx.dev/) / [pnpm](https://pnpm.io/)
 
 ## セットアップ
@@ -46,19 +46,21 @@ pnpm exec astro dev stop
 
 ## コマンド
 
-| コマンド               | 内容                                           |
-| :--------------------- | :--------------------------------------------- |
-| `pnpm dev`             | 開発サーバーをフォアグラウンドで起動           |
-| `pnpm build`           | 本番用サイトを `dist/` に生成                  |
-| `pnpm preview`         | 本番ビルドをローカルでプレビュー               |
-| `pnpm storybook`       | Storybook を `localhost:6006` で起動           |
-| `pnpm build-storybook` | 静的な Storybook を `storybook-static/` に生成 |
-| `pnpm typecheck`       | Astro と TypeScript の型チェック               |
-| `pnpm lint`            | Oxlint でコードを検査                          |
-| `pnpm lint:fix`        | Oxlint の安全な修正を適用                      |
-| `pnpm format`          | Oxfmt でファイルを整形                         |
-| `pnpm format:check`    | ファイルを変更せずフォーマットを検査           |
-| `pnpm astro -- --help` | Astro CLI のヘルプを表示                       |
+| コマンド                  | 内容                                           |
+| :------------------------ | :--------------------------------------------- |
+| `pnpm dev`                | 開発サーバーをフォアグラウンドで起動           |
+| `pnpm build`              | 本番用サイトを `dist/` に生成                  |
+| `pnpm preview`            | 本番ビルドをローカルでプレビュー               |
+| `pnpm storybook`          | Storybook を `localhost:6006` で起動           |
+| `pnpm build-storybook`    | 静的な Storybook を `storybook-static/` に生成 |
+| `pnpm preview:cloudflare` | Cloudflare Workers 上の挙動をローカルで確認    |
+| `pnpm deploy`             | ビルドして Cloudflare Workers へデプロイ       |
+| `pnpm typecheck`          | Astro と TypeScript の型チェック               |
+| `pnpm lint`               | Oxlint でコードを検査                          |
+| `pnpm lint:fix`           | Oxlint の安全な修正を適用                      |
+| `pnpm format`             | Oxfmt でファイルを整形                         |
+| `pnpm format:check`       | ファイルを変更せずフォーマットを検査           |
+| `pnpm astro -- --help`    | Astro CLI のヘルプを表示                       |
 
 ## 記事の追加
 
@@ -102,18 +104,21 @@ showToc: true
 │   ├── utils/             # 日付・タグ関連のユーティリティ
 │   └── content.config.ts  # blog コレクションのスキーマ
 ├── astro.config.mjs       # Astro、サイト URL、サイトマップの設定
+├── wrangler.jsonc         # Cloudflare Workers Static Assets の設定
 └── package.json
 ```
 
-## Cloudflare Pages へのデプロイ
+## Cloudflare Workers へのデプロイ
 
-Cloudflare Pages では次の値を設定します。
+Cloudflare Workers Builds では次の値を設定します。
 
-| 設定                   | 値           |
-| :--------------------- | :----------- |
-| Production branch      | `main`       |
-| Build command          | `pnpm build` |
-| Build output directory | `dist`       |
+| 設定              | 値                          |
+| :---------------- | :-------------------------- |
+| Production branch | `main`                      |
+| Build command     | `pnpm run build`            |
+| Deploy command    | `pnpm exec wrangler deploy` |
+
+静的アセットの出力先などは `wrangler.jsonc` で管理します。Wrangler の自動セットアップを避けるため、設定ファイルと依存バージョンはリポジトリに含めています。
 
 本番環境の環境変数 `SITE_URL` には canonical URL とサイトマップに使用するオリジンを指定します。末尾のスラッシュは不要です。
 

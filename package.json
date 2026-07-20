@@ -6,6 +6,8 @@
 		"dev": "astro dev",
 		"build": "astro build",
 		"preview": "astro preview",
+		"preview:cloudflare": "pnpm run build && wrangler dev",
+		"deploy": "pnpm run build && wrangler deploy",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build",
 		"astro": "astro",
@@ -26,7 +28,8 @@
 		"oxfmt": "^0.59.0",
 		"oxlint": "^1.74.0",
 		"storybook": "^10.5.2",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"wrangler": "^4.112.0"
 	},
 	"engines": {
 		"node": ">=22.12.0"
