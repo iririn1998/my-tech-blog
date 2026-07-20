@@ -41,8 +41,12 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
 		/>
 		<title>{title}</title>
 	</head>
-	<body>
-		<a class="skip-link" href="#main-content">本文へ移動</a>
+	<body id="page-top">
+		<a class="back-to-top" href="#page-top" aria-label="ページ上部へ戻る" title="ページ上部へ戻る">
+			<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+				<path d="M5 5h14M12 19V9M7.5 13.5 12 9l4.5 4.5" />
+			</svg>
+		</a>
 		<SiteNav />
 		<div class="container">
 			<main id="main-content"><slot /></main>
@@ -58,18 +62,44 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
 		padding: 0 clamp(20px, 5vw, 72px);
 	}
 
-	.skip-link {
+	.back-to-top {
 		position: fixed;
-		top: 12px;
-		left: 12px;
+		right: clamp(16px, 3vw, 32px);
+		bottom: clamp(16px, 3vw, 32px);
 		z-index: 10;
-		padding: 8px 12px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 48px;
+		height: 48px;
 		background: var(--color-paper);
 		border: 1px solid var(--color-text);
-		transform: translateY(calc(-100% - 16px));
+		border-radius: 50%;
+		color: var(--color-text);
+		text-decoration: none;
+		transition:
+			background-color 160ms ease,
+			border-color 160ms ease,
+			color 160ms ease,
+			transform 160ms ease;
 	}
 
-	.skip-link:focus {
-		transform: translateY(0);
+	.back-to-top svg {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: currentColor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 2;
+	}
+
+	@media (hover: hover) {
+		.back-to-top:hover {
+			background: var(--color-accent-700);
+			border-color: var(--color-accent-700);
+			color: var(--color-paper);
+			transform: translateY(-2px);
+		}
 	}
 </style>
