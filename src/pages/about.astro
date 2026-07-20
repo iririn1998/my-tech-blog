@@ -1,71 +1,18 @@
 ---
-import CmykFigure from '../components/CmykFigure.astro';
-import LeaderRow from '../components/LeaderRow.astro';
-import Tag from '../components/Tag.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
-
-const career = [
-	{ label: 'SaaS 企業でフロントエンドを担当', period: '現在', accent: true },
-	{ label: '受託開発でフルスタックを経験', period: '2021–2024', accent: false },
-	{ label: '情報系の大学院を修了', period: '2021', accent: false },
-];
-
-const skills = ['TypeScript', 'React', 'Next.js', 'Node.js', 'Cloudflare Workers', 'Playwright'];
 ---
 
-<BaseLayout title="このサイトについて | Web技報" description="Web技報は、Web エンジニアの筆者が業務や個人開発で得た知見を書き留める個人サイトです。">
-	<div class="grid">
-		<div>
-			<h1>このサイトについて</h1>
-			<div class="intro">
-				<p>
-					「Web技報」は、Web
-					エンジニアとして働く筆者が、業務や個人開発で得た知見を書き留める個人サイトです。読んだ人の役に立てば嬉しいですが、第一の読者は半年後の自分です。
-				</p>
-					<p>
-						記事は週1本を目安に更新しています。動かして確かめたことだけを書き、推測で書いた部分にはその旨を明記するようにしています。内容は必要に応じて随時更新します。
-				</p>
-			</div>
-
-			<h2>経歴</h2>
-			<div class="rows">
-				{
-					career.map((item) => (
-						<LeaderRow accent={item.accent}>
-							{item.label}
-							<span slot="trailing" class:list={['period', { accent: item.accent }]}>
-								{item.period}
-							</span>
-						</LeaderRow>
-					))
-				}
-			</div>
-
-			<h2>よく使う技術</h2>
-			<div class="skills">
-				{skills.map((skill, i) => <Tag variant={i === 0 ? 'accent' : 'outline'}>{skill}</Tag>)}
-			</div>
-		</div>
-
-		<CmykFigure aspectRatio="4 / 5" placeholder="プロフィール写真">
-			<span slot="caption">筆者近影 — 写真は4色の版に分解して印刷されます。</span>
-		</CmykFigure>
+<BaseLayout title="このサイトについて | Web技報" description="都内でエンジニアをしている、いりりんの個人技術ブログです。">
+	<div class="about">
+		<h1>このサイトについて</h1>
+		<p>こんにちは、都内でエンジニアをしているいりりんです。このサイトでは、試したことや作ったものを書き留めています。</p>
 	</div>
 </BaseLayout>
 
 <style>
-	.grid {
-		display: grid;
-		grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
-		gap: 42px clamp(40px, 6vw, 110px);
-		align-items: start;
+	.about {
+		max-width: 40em;
 		padding: 56px 0 70px;
-	}
-
-	@media (max-width: 800px) {
-		.grid {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 
 	h1 {
@@ -75,49 +22,10 @@ const skills = ['TypeScript', 'React', 'Next.js', 'Node.js', 'Cloudflare Workers
 		margin: 0;
 	}
 
-	.intro {
-		max-width: 40em;
+	p {
 		font-size: 16px;
 		line-height: 32px;
 		margin: 32px 0 0;
-	}
-
-	.intro p {
-		margin: 0;
 		text-align: justify;
-	}
-
-	.intro p + p {
-		margin-top: 20px;
-	}
-
-	h2 {
-		font-size: 22px;
-		line-height: 1.4;
-		margin: 56px 0 0;
-	}
-
-	.rows {
-		display: grid;
-		gap: 12px;
-		margin: 20px 0 0;
-		max-width: 40em;
-	}
-
-	.period {
-		color: color-mix(in srgb, var(--color-text) 70%, transparent);
-	}
-
-	.period.accent {
-		color: var(--color-accent-700);
-		font-family: var(--font-heading);
-		font-weight: 600;
-	}
-
-	.skills {
-		display: flex;
-		gap: var(--space-2);
-		flex-wrap: wrap;
-		margin: 20px 0 0;
 	}
 </style>
