@@ -36,32 +36,49 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+Mono:wght@400;700&display=swap"
 			rel="stylesheet"
 		/>
 		<title>{title}</title>
 	</head>
 	<body id="page-top">
-		<a class="back-to-top" href="#page-top" aria-label="ページ上部へ戻る" title="ページ上部へ戻る">
-			<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-				<path d="M5 5h14M12 19V9M7.5 13.5 12 9l4.5 4.5" />
-			</svg>
-		</a>
+		<a class="skip-link" href="#main-content">本文へ移動</a>
 		<SiteNav />
-		<div class="container">
-			<main id="main-content"><slot /></main>
-			<SiteFooter />
-		</div>
+		<main id="main-content" class="container"><slot /></main>
+		<SiteFooter />
+		<a class="back-to-top" href="#page-top">
+			<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+				<path d="M5 4.5h14M12 20V9M6.5 14.5 12 9l5.5 5.5" />
+			</svg>
+			<span class="dads-u-visually-hidden">ページ上部へ戻る</span>
+		</a>
 	</body>
 </html>
 
 <style>
 	.container {
-		max-width: 1200px;
+		max-width: var(--layout-max-width);
 		margin: 0 auto;
-		padding: 0 clamp(20px, 5vw, 72px);
+		padding: 0 var(--layout-gutter);
 	}
 
+	/* キーボード操作時のみ表示されるスキップリンク */
+	.skip-link {
+		position: absolute;
+		top: calc(8 / 16 * 1rem);
+		left: calc(8 / 16 * 1rem);
+		z-index: 20;
+		padding: calc(8 / 16 * 1rem) calc(16 / 16 * 1rem);
+		background: var(--color-bg);
+		font-weight: var(--font-weight-700);
+		transform: translateY(-200%);
+	}
+
+	.skip-link:focus-visible {
+		transform: none;
+	}
+
+	/* DADS ボタン (アウトライン) と同じ配色のフローティングボタン */
 	.back-to-top {
 		position: fixed;
 		right: clamp(16px, 3vw, 32px);
@@ -70,23 +87,18 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 48px;
-		height: 48px;
-		background: var(--color-paper);
-		border: 1px solid var(--color-text);
-		border-radius: 50%;
-		color: var(--color-text);
-		text-decoration: none;
-		transition:
-			background-color 160ms ease,
-			border-color 160ms ease,
-			color 160ms ease,
-			transform 160ms ease;
+		width: calc(56 / 16 * 1rem);
+		height: calc(56 / 16 * 1rem);
+		border: 1px solid var(--color-key-900);
+		border-radius: var(--border-radius-8);
+		background: var(--color-bg);
+		color: var(--color-key-900);
+		box-shadow: var(--elevation-2);
 	}
 
 	.back-to-top svg {
-		width: 22px;
-		height: 22px;
+		width: calc(24 / 16 * 1rem);
+		height: calc(24 / 16 * 1rem);
 		fill: none;
 		stroke: currentColor;
 		stroke-linecap: round;
@@ -96,10 +108,13 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin)
 
 	@media (hover: hover) {
 		.back-to-top:hover {
-			background: var(--color-accent-700);
-			border-color: var(--color-accent-700);
-			color: var(--color-paper);
-			transform: translateY(-2px);
+			background: var(--color-key-200);
+			color: var(--color-key-1000);
 		}
+	}
+
+	.back-to-top:active {
+		background: var(--color-key-300);
+		color: var(--color-key-1200);
 	}
 </style>

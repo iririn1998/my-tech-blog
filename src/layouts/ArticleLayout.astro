@@ -2,9 +2,11 @@
 /**
  * 記事ページのレイアウト。本文 + sticky 目次の2カラム。
  * 本文 (Markdown レンダリング結果) は default スロットで受け取る。
+ * 本文の文字組み・見出し・表・引用などは DADS のタイポグラフィとコンポーネントの値に合わせる。
  */
 import ArticleHeader from '../components/article/ArticleHeader.astro';
 import TableOfContents from '../components/article/TableOfContents.astro';
+import Breadcrumb from '../components/Breadcrumb.astro';
 import BaseLayout from './BaseLayout.astro';
 
 interface Props {
@@ -20,28 +22,35 @@ const { title, excerpt, date, tags, headings = [], showToc = true } = Astro.prop
 const hasToc = showToc && headings.length > 0;
 ---
 
-	<BaseLayout title={`${title} | いりりんご🍎web牧場`} description={excerpt} type="article">
+<BaseLayout title={`${title} | いりりんご🍎web牧場`} description={excerpt} type="article">
+	<Breadcrumb items={[{ label: title }]} />
 	<ArticleHeader title={title} date={date} tags={tags} />
 	<div class:list={['grid', { 'with-toc': hasToc }]}>
-		{hasToc && <div class="toc-wrap"><TableOfContents headings={headings} /></div>}
+		{
+			hasToc && (
+				<div class="toc-wrap">
+					<TableOfContents headings={headings} />
+				</div>
+			)
+		}
 		<article class="article-body">
 			<slot />
-			<p class="back"><a href="/">← トップへ戻る</a></p>
 		</article>
 	</div>
+	<p class="back"><a href="/">トップへ戻る</a></p>
 </BaseLayout>
 
 <style>
 	.grid {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		gap: 28px clamp(40px, 5vw, 96px);
+		gap: calc(32 / 16 * 1rem) clamp(40px, 5vw, 80px);
 		align-items: start;
-		padding: 28px 0 70px;
+		padding-top: calc(40 / 16 * 1rem);
 	}
 
 	.grid.with-toc {
-		grid-template-columns: minmax(0, 1fr) 260px;
+		grid-template-columns: minmax(0, 1fr) 280px;
 		grid-template-areas: 'article toc';
 	}
 
@@ -51,9 +60,10 @@ const hasToc = showToc && headings.length > 0;
 
 	.toc-wrap {
 		grid-area: toc;
+		align-self: stretch;
 	}
 
-	@media (max-width: 900px) {
+	@media (max-width: 960px) {
 		.grid.with-toc {
 			grid-template-columns: minmax(0, 1fr);
 			grid-template-areas:
@@ -62,87 +72,198 @@ const hasToc = showToc && headings.length > 0;
 		}
 	}
 
+	.back {
+		max-width: var(--measure-body);
+		margin: calc(64 / 16 * 1rem) 0 0;
+		border-top: 1px solid var(--color-border);
+		padding-top: calc(24 / 16 * 1rem);
+	}
+
+	/* ---- 本文 (DADS タイポグラフィ: Std-16N-175) ---- */
 	.article-body {
-		max-width: 40em;
-		font-size: 16px;
-		line-height: 32px;
+		max-width: var(--measure-body);
+		font-size: var(--font-size-16);
+		line-height: var(--line-height-175);
+		letter-spacing: 0.02em;
 	}
 
-	.article-body :global(p) {
-		margin: 20px 0 0;
-		text-align: justify;
-	}
-
-	.article-body :global(p:first-child) {
+	.article-body > :global(:first-child) {
 		margin-top: 0;
 	}
 
+	.article-body :global(p) {
+		margin: calc(24 / 16 * 1rem) 0 0;
+	}
+
+	/* 見出し: h2 は DADS 見出しの「チップ」付き */
 	.article-body :global(h2) {
-		font-size: 24px;
-		line-height: 1.4;
-		margin: 56px 0 0;
+		position: relative;
+		margin: calc(64 / 16 * 1rem) 0 0;
+		padding-left: calc(1em / 3 + 0.5em);
+		color: var(--color-text-strong);
+		font-size: var(--font-size-24);
+		font-weight: var(--font-weight-700);
+		line-height: var(--line-height-150);
+		letter-spacing: 0.02em;
+	}
+
+	.article-body :global(h2)::before {
+		position: absolute;
+		top: calc(0.5lh - 0.45em);
+		bottom: calc(0.5lh - 0.55em);
+		left: 0;
+		width: calc(1em / 3);
+		background-color: var(--color-key-900);
+		content: '';
+	}
+
+	@media (forced-colors: active) {
+		.article-body :global(h2)::before {
+			background-color: CanvasText;
+		}
 	}
 
 	.article-body :global(h3) {
-		font-size: 21px;
-		line-height: 1.5;
-		margin: 44px 0 0;
+		margin: calc(48 / 16 * 1rem) 0 0;
+		color: var(--color-text-strong);
+		font-size: var(--font-size-20);
+		font-weight: var(--font-weight-700);
+		line-height: var(--line-height-150);
+		letter-spacing: 0.02em;
 	}
 
 	.article-body :global(h4) {
-		font-size: 18px;
-		line-height: 1.6;
-		margin: 36px 0 0;
+		margin: calc(40 / 16 * 1rem) 0 0;
+		color: var(--color-text-strong);
+		font-size: var(--font-size-18);
+		font-weight: var(--font-weight-700);
+		line-height: var(--line-height-160);
+		letter-spacing: 0.02em;
 	}
 
+	@media (min-width: 768px) {
+		.article-body :global(h2) {
+			font-size: var(--font-size-28);
+			letter-spacing: 0.01em;
+		}
+
+		.article-body :global(h3) {
+			font-size: var(--font-size-22);
+		}
+
+		.article-body :global(h4) {
+			font-size: var(--font-size-20);
+			line-height: var(--line-height-150);
+		}
+	}
+
+	/* リスト: DADS リストの余白 */
 	.article-body :global(ol),
 	.article-body :global(ul) {
-		margin: 20px 0 0;
-		padding-left: 1.7em;
+		margin: calc(24 / 16 * 1rem) 0 0;
+		padding-left: calc(32 / 16 * 1rem);
 	}
 
-	.article-body :global(li + li) {
-		margin-top: 8px;
+	.article-body :global(li + li),
+	.article-body :global(li > ol),
+	.article-body :global(li > ul) {
+		margin-top: calc(8 / 16 * 1rem);
 	}
 
 	.article-body :global(img) {
 		display: block;
 		max-width: 100%;
 		height: auto;
-		margin: 28px 0 0;
-		border: 1px solid color-mix(in srgb, var(--color-text) 18%, transparent);
-		border-radius: var(--radius-sm);
-		background: var(--color-neutral-100);
+		margin: calc(24 / 16 * 1rem) 0 0;
+		border: 1px solid var(--color-border);
+		border-radius: var(--border-radius-8);
 	}
 
+	/* 引用: DADS 引用ブロック */
+	.article-body :global(blockquote) {
+		margin: calc(24 / 16 * 1rem) 0 0;
+		border-left: 8px solid var(--color-neutral-solid-gray-536);
+		padding: calc(8 / 16 * 1rem) calc(16 / 16 * 1rem) calc(8 / 16 * 1rem) calc(24 / 16 * 1rem);
+	}
+
+	.article-body :global(blockquote > :first-child) {
+		margin-top: 0;
+	}
+
+	/* 区切り線: DADS ディバイダー */
+	.article-body :global(hr) {
+		margin: calc(48 / 16 * 1rem) 0;
+		border: 0;
+		border-top: 1px solid var(--color-border);
+	}
+
+	.article-body :global(hr + *) {
+		margin-top: 0;
+	}
+
+	/* 表: DADS テーブル (列見出しはグレー背景) */
+	.article-body :global(table) {
+		width: 100%;
+		margin: calc(24 / 16 * 1rem) 0 0;
+		border-collapse: collapse;
+		font-size: var(--font-size-16);
+		line-height: var(--line-height-150);
+	}
+
+	.article-body :global(th),
+	.article-body :global(td) {
+		border: 1px solid var(--color-border);
+		padding: calc(12 / 16 * 1rem) calc(16 / 16 * 1rem);
+		text-align: left;
+		vertical-align: baseline;
+	}
+
+	.article-body :global(thead th) {
+		border-color: var(--color-neutral-solid-gray-500);
+		background-color: var(--color-neutral-solid-gray-100);
+		color: var(--color-text-strong);
+		font-weight: var(--font-weight-700);
+	}
+
+	/* 狭い画面では DADS テーブルの dense 相当まで詰める */
+	@media (max-width: 600px) {
+		.article-body :global(table) {
+			font-size: var(--font-size-14);
+		}
+
+		.article-body :global(th),
+		.article-body :global(td) {
+			padding: calc(8 / 16 * 1rem) calc(8 / 16 * 1rem);
+		}
+	}
+
+	/* コード */
 	.article-body :global(pre) {
-		font-family: var(--font-mono);
-		font-size: 13.5px;
-		line-height: 24px;
-		background: var(--color-neutral-100) !important;
-		padding: 24px 28px;
-		border-radius: var(--radius-sm);
+		margin: calc(24 / 16 * 1rem) 0 0;
 		overflow-x: auto;
-		margin: 28px 0 0;
+		border: 1px solid var(--color-border);
+		border-radius: var(--border-radius-8);
+		padding: calc(16 / 16 * 1rem) calc(20 / 16 * 1rem);
+		font-family: var(--font-family-mono);
+		font-size: var(--font-size-14);
+		line-height: var(--line-height-170);
+		letter-spacing: 0;
 	}
 
-	.article-body :global(pre + p) {
-		margin-top: 28px;
+	.article-body :global(pre code) {
+		font-family: inherit;
 	}
 
 	.article-body :global(:not(pre) > code) {
-		font-family: var(--font-mono);
-		font-size: 14px;
-		background: var(--color-neutral-100);
-		padding: 2px 6px;
-		border-radius: var(--radius-sm);
-	}
-
-	.back {
-		margin: 56px 0 0;
-	}
-
-	.back a {
-		font-size: 14.5px;
+		border: 1px solid var(--color-border-subtle);
+		border-radius: var(--border-radius-4);
+		background: var(--color-bg-subtle);
+		padding: 0.1em 0.4em;
+		color: var(--color-text-strong);
+		font-family: var(--font-family-mono);
+		font-size: 0.875em;
+		letter-spacing: 0;
+		-webkit-box-decoration-break: clone;
+		box-decoration-break: clone;
 	}
 </style>

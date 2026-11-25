@@ -1,6 +1,7 @@
 ---
 /**
- * サイト共通ナビゲーション。現在ページのリンクをアクセント色で表示する。
+ * サイト共通ヘッダー。サイト名 + 主要ナビゲーション。
+ * ナビゲーションは DADS の「ヘッダーメニュー (水平)」に準拠し、現在ページを下線とキーカラーで示す。
  */
 const links = [
 	{ label: 'トップ', href: '/' },
@@ -11,61 +12,152 @@ const links = [
 const currentPath = Astro.url?.pathname ?? '/';
 
 function isActive(href: string): boolean {
-	const normalizedHref = href === '/' ? href : href.replace(/\/$/, '');
+	if (href === '/') return currentPath === '/';
+	const normalizedHref = href.replace(/\/$/, '');
 	return currentPath === normalizedHref || currentPath.startsWith(`${normalizedHref}/`);
 }
 ---
 
-<nav aria-label="主要ナビゲーション" class="nav">
-	<span class="nav-brand"><a href="/">いりりんご🍎web牧場</a></span>
-	{
-		links.map((link) => (
-			<a
-				class:list={['nav-link', { active: isActive(link.href) }]}
-				href={link.href}
-				aria-current={isActive(link.href) ? 'page' : undefined}
-			>
-				{link.label}
-			</a>
-		))
-	}
-</nav>
+<header class="site-header">
+	<div class="inner">
+		<a class="brand" href="/">いりりんご🍎web牧場</a>
+		<nav aria-label="主要ナビゲーション">
+			<ul class="menu">
+				{
+					links.map((link) => (
+						<li>
+							<a
+								class="menu-link"
+								href={link.href}
+								aria-current={isActive(link.href) ? 'page' : undefined}
+							>
+								{link.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+	</div>
+</header>
 
 <style>
-	.nav {
+	.site-header {
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-bg);
+	}
+
+	.inner {
 		display: flex;
-		align-items: baseline;
+		align-items: stretch;
+		justify-content: space-between;
 		flex-wrap: wrap;
-		gap: 16px 24px;
-		max-width: 1200px;
+		column-gap: calc(24 / 16 * 1rem);
+		max-width: var(--layout-max-width);
 		margin: 0 auto;
-		padding: 20px clamp(20px, 5vw, 72px);
-		border-bottom: 3px double color-mix(in srgb, var(--color-text) 60%, transparent);
+		padding: 0 var(--layout-gutter);
 	}
 
-	.nav-brand {
-		font-family: var(--font-heading);
-		font-size: 21px;
-		font-weight: 700;
-		letter-spacing: -0.01em;
-		margin-right: 12px;
-	}
-
-	.nav-brand a {
-		color: inherit;
+	.brand:any-link {
+		display: flex;
+		align-items: center;
+		min-height: calc(64 / 16 * 1rem);
+		color: var(--color-text-strong);
+		font-size: var(--font-size-22);
+		font-weight: var(--font-weight-700);
+		line-height: var(--line-height-150);
+		letter-spacing: 0.02em;
 		text-decoration: none;
 	}
 
-	.nav-link {
-		font-size: 14.5px;
+	@media (hover: hover) {
+		.brand:hover {
+			text-decoration: underline;
+			text-decoration-thickness: calc(3 / 16 * 1rem);
+		}
+	}
+
+	.menu {
+		display: flex;
+		align-items: stretch;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.menu li {
+		display: flex;
+	}
+
+	.menu-link:any-link {
+		position: relative;
+		display: flex;
+		align-items: center;
+		min-height: calc(64 / 16 * 1rem);
+		padding: calc(16 / 16 * 1rem) calc(20 / 16 * 1rem);
+		color: var(--color-text-strong);
+		font-size: var(--font-size-16);
+		font-weight: var(--font-weight-700);
+		line-height: var(--line-height-130);
+		letter-spacing: 0;
 		text-decoration: none;
-		color: var(--color-text);
 		white-space: nowrap;
 	}
 
-	.nav-link:hover,
-	.nav-link.active {
-		color: var(--color-accent-700);
+	@media (hover: hover) {
+		.menu-link:hover {
+			background: var(--color-bg-subtle);
+		}
+
+		.menu-link:hover::after {
+			position: absolute;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			border-bottom: 2px solid var(--color-neutral-black);
+			content: '';
+		}
 	}
 
+	.menu-link[aria-current='page'] {
+		color: var(--color-key-1000);
+	}
+
+	.menu-link[aria-current='page']::after {
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		border-bottom: 4px solid var(--color-key-900);
+		content: '';
+	}
+
+	.menu-link:focus-visible {
+		outline-offset: calc(-4 / 16 * 1rem);
+		background: var(--color-primitive-yellow-300);
+	}
+
+	/* 狭い画面ではサイト名とメニューを2段にする */
+	@media (max-width: 600px) {
+		.inner {
+			padding: 0;
+		}
+
+		.brand:any-link {
+			min-height: calc(56 / 16 * 1rem);
+			padding: 0 var(--layout-gutter);
+			font-size: var(--font-size-20);
+		}
+
+		nav {
+			flex-basis: 100%;
+			border-top: 1px solid var(--color-border-subtle);
+		}
+
+		.menu-link:any-link {
+			min-height: calc(48 / 16 * 1rem);
+			padding: calc(12 / 16 * 1rem) var(--layout-gutter);
+		}
+	}
 </style>

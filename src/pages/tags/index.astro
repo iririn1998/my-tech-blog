@@ -1,9 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import TagCloud from '../../components/tags/TagCloud.astro';
 import TagSection from '../../components/tags/TagSection.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { formatIsoDate, formatShortDate } from '../../utils/date';
+import { formatFullDate, formatIsoDate } from '../../utils/date';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -22,65 +24,39 @@ for (const post of posts) {
 const tags = [...tagMap.entries()].map(([name, entries]) => ({
 	name,
 	count: entries.length,
-		posts: entries.map((post) => ({
-			title: post.data.title,
-			href: `/posts/${post.id}/`,
-			dateLabel: formatShortDate(post.data.pubDate),
-			datetime: formatIsoDate(post.data.pubDate),
-		})),
+	posts: entries.map((post) => ({
+		title: post.data.title,
+		href: `/posts/${post.id}/`,
+		dateLabel: formatFullDate(post.data.pubDate),
+		datetime: formatIsoDate(post.data.pubDate),
+	})),
 }));
 ---
 
 <BaseLayout title="タグ別一覧 | いりりんご🍎web牧場" description="記事をタグ別に整理しています。">
-	<header>
-		<h1>タグ別一覧</h1>
+	<Breadcrumb items={[{ label: 'タグ別一覧' }]} />
+	<PageHeader title="タグ別一覧">
 		<p>
-			全{posts.length}記事を{tags.length}のタグで整理しています。タグをクリックすると該当の節へ移動します。
+			全{posts.length}記事を{tags.length}のタグで整理しています。タグを選ぶと該当の節へ移動します。
 		</p>
-		<div class="cloud-wrap">
-			<TagCloud tags={tags} />
-		</div>
-	</header>
+	</PageHeader>
+	<nav aria-label="タグ一覧" class="cloud-wrap">
+		<TagCloud tags={tags} />
+	</nav>
 	<div class="grid">
 		{tags.map((tag) => <TagSection name={tag.name} posts={tag.posts} />)}
 	</div>
 </BaseLayout>
 
 <style>
-	header {
-		padding: 56px 0 42px;
-	}
-
-	h1 {
-		font-size: clamp(32px, 4vw, 48px);
-		line-height: 1.2;
-		letter-spacing: -0.015em;
-		margin: 0;
-	}
-
-	header p {
-		font-size: 15.5px;
-		line-height: 28px;
-		margin: 18px 0 0;
-		max-width: 44em;
-		color: color-mix(in srgb, var(--color-text) 78%, transparent);
-	}
-
 	.cloud-wrap {
-		margin: 28px 0 0;
+		margin: 0 0 calc(48 / 16 * 1rem);
 	}
 
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-		gap: 56px clamp(40px, 5vw, 96px);
-		padding: 14px 0 70px;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
+		gap: calc(24 / 16 * 1rem);
 		align-items: start;
-	}
-
-	@media (max-width: 480px) {
-		.grid {
-			grid-template-columns: minmax(0, 1fr);
-		}
 	}
 </style>

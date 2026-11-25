@@ -11,7 +11,8 @@ export default defineConfig({
 	integrations: [sitemap()],
 	markdown: {
 		shikiConfig: {
-			theme: 'github-light',
+			// 白背景で全トークンのコントラスト比が 5:1 以上になるテーマ
+			theme: 'github-light-high-contrast',
 		},
 	},
 });

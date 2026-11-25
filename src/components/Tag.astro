@@ -1,65 +1,77 @@
 ---
 /**
- * タグチップ。3バリアント + 任意でリンク化。
+ * タグ。DADS の「チップラベル」を使い、3バリアント + 任意でリンク化・件数表示する。
+ * - accent: キーカラーの塗り (記事の主タグ)
+ * - outline: グレーの枠線 (その他のタグ)
+ * - neutral: グレーの塗り (「特集」などの補足ラベル)
+ * リンク化した場合は、ラベルであることと区別できるようタグ名に下線を付ける。
  */
 interface Props {
 	variant?: 'accent' | 'outline' | 'neutral';
 	href?: string;
+	/** タグ名の後ろに件数バッジを表示する */
+	count?: number;
 }
 
-const { variant = 'outline', href } = Astro.props;
+const { variant = 'outline', href, count } = Astro.props;
+
+const chipAttrs = {
+	accent: { 'data-style': 'filled-1', 'data-color': 'blue' },
+	outline: { 'data-style': 'outlined', 'data-color': 'gray' },
+	neutral: { 'data-style': 'filled-1', 'data-color': 'gray' },
+}[variant];
+const Element = href ? 'a' : 'span';
 ---
 
-{
-	href ? (
-		<a class="tag-link" href={href}>
-			<span class:list={['tag', `tag-${variant}`]}>
-				<slot />
+<Element class:list={['dads-chip-label', 'tag', { 'tag-link': href }]} href={href} {...chipAttrs}>
+	<span class="label"><slot /></span>
+	{
+		count !== undefined && (
+			<span class="count">
+				{count}
+				<span class="dads-u-visually-hidden">件</span>
 			</span>
-		</a>
-	) : (
-		<span class:list={['tag', `tag-${variant}`]}>
-			<slot />
-		</span>
-	)
-}
+		)
+	}
+</Element>
 
 <style>
+	.tag {
+		white-space: nowrap;
+	}
+
 	.tag-link {
 		text-decoration: none;
 	}
 
-	.tag {
-		display: inline-flex;
-		align-items: center;
-		font-family: var(--font-heading);
-		font-size: 12px;
-		font-weight: 600;
+	.tag-link .label {
+		text-decoration: underline;
+		text-decoration-thickness: calc(1 / 16 * 1rem);
+		text-underline-offset: calc(3 / 16 * 1rem);
+	}
+
+	@media (hover: hover) {
+		.tag-link:hover {
+			background-color: var(--color-key-50);
+		}
+
+		.tag-link:hover .label {
+			text-decoration-thickness: calc(3 / 16 * 1rem);
+		}
+	}
+
+	.count {
+		position: relative;
+		min-width: 1.5em;
+		margin-left: calc(6 / 16 * 1rem);
+		border-radius: var(--border-radius-full);
+		background: var(--color-neutral-solid-gray-100);
+		padding: calc(3 / 16 * 1rem) calc(6 / 16 * 1rem);
+		color: var(--color-text-strong);
+		font-size: var(--font-size-14);
 		line-height: 1;
-		letter-spacing: 0.06em;
-		padding: 5px 10px;
-		border-radius: var(--radius-sm);
-		white-space: nowrap;
-	}
-
-	.tag-accent {
-		background: var(--color-accent-700);
-		color: var(--color-paper);
-	}
-
-	.tag-outline {
-		padding: 4px 9px;
-		border: 1px solid color-mix(in srgb, var(--color-text) 45%, transparent);
-		color: var(--color-text);
-	}
-
-	.tag-neutral {
-		background: var(--color-neutral-100);
-		color: var(--color-text);
-	}
-
-	.tag-link:hover .tag-outline {
-		border-color: var(--color-accent-700);
-		color: var(--color-accent-700);
+		letter-spacing: 0;
+		text-align: center;
+		font-feature-settings: 'tnum' 1;
 	}
 </style>

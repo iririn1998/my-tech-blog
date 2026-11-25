@@ -5,13 +5,52 @@
 const year = new Date().getFullYear();
 ---
 
-<footer>© {year} いりりんご🍎web牧場 — 個人の技術記録。記載内容は執筆時点のものです。</footer>
+<footer class="site-footer">
+	<div class="inner">
+		<p class="name">いりりんご🍎web牧場</p>
+		<p class="note">個人の技術記録です。記載内容は執筆時点のものです。</p>
+		<p class="copyright"><small>© {year} いりりんご🍎web牧場</small></p>
+	</div>
+</footer>
 
 <style>
-	footer {
-		padding: 42px 0 56px;
-		font-size: 12.5px;
-		line-height: 24px;
-		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+	.site-footer {
+		margin-top: calc(80 / 16 * 1rem);
+		border-top: 1px solid var(--color-border);
+		background: var(--color-bg-subtle);
+	}
+
+	.inner {
+		max-width: var(--layout-max-width);
+		margin: 0 auto;
+		padding: calc(40 / 16 * 1rem) var(--layout-gutter) calc(48 / 16 * 1rem);
+	}
+
+	p {
+		margin: 0;
+	}
+
+	.name {
+		color: var(--color-text-strong);
+		font-size: var(--font-size-17);
+		font-weight: var(--font-weight-700);
+		line-height: var(--line-height-170);
+	}
+
+	.note {
+		margin-top: calc(8 / 16 * 1rem);
+		font-size: var(--font-size-16);
+		line-height: var(--line-height-170);
+	}
+
+	.copyright {
+		margin-top: calc(24 / 16 * 1rem);
+		color: var(--color-text-description);
+		font-size: var(--font-size-14);
+		line-height: var(--line-height-150);
+	}
+
+	.copyright small {
+		font-size: inherit;
 	}
 </style>

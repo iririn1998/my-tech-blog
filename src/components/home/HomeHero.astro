@@ -5,42 +5,49 @@
 ---
 
 <header class="hero">
-	<h1>
-		<span class="hero-title">
-			<span class="paper">いりりんご🍎web牧場</span>
-		</span>
-	</h1>
-	<p>
+	<h1 class="title">いりりんご🍎web牧場</h1>
+	<p class="lead">
 		都内でエンジニアをしている、いりりんの個人技術ブログです。試したことや作ったものを書き留めています。
 	</p>
 </header>
 
 <style>
 	.hero {
-		padding: 56px 0 42px;
+		padding: calc(56 / 16 * 1rem) 0 calc(48 / 16 * 1rem);
 	}
 
-	h1 {
-		font-size: clamp(44px, 6vw, 76px);
-		line-height: 1.08;
-		letter-spacing: -0.02em;
-		margin: 0 0 0 -0.035em;
+	/* DADS タイポグラフィ: Std-32B-150 → 広い画面では Dsp-48B-140 */
+	.title {
+		margin: 0;
+		color: var(--color-text-strong);
+		font-size: var(--font-size-32);
+		font-weight: var(--font-weight-700);
+		line-height: var(--line-height-150);
+		letter-spacing: 0.01em;
 	}
 
-	.hero-title {
-		position: relative;
-		display: inline-block;
+	.lead {
+		max-width: var(--measure-body);
+		margin: calc(16 / 16 * 1rem) 0 0;
+		font-size: var(--font-size-16);
+		line-height: var(--line-height-170);
 	}
 
-	.paper {
-		color: var(--color-text);
-	}
+	@media (min-width: 768px) {
+		.hero {
+			padding: calc(80 / 16 * 1rem) 0 calc(64 / 16 * 1rem);
+		}
 
-	p {
-		font-size: 16px;
-		line-height: 28px;
-		margin: 20px 0 0;
-		max-width: 44em;
-		color: color-mix(in srgb, var(--color-text) 78%, transparent);
+		.title {
+			font-size: var(--font-size-48);
+			line-height: var(--line-height-140);
+			letter-spacing: 0;
+		}
+
+		.lead {
+			margin-top: calc(24 / 16 * 1rem);
+			font-size: var(--font-size-18);
+			line-height: var(--line-height-160);
+		}
 	}
 </style>

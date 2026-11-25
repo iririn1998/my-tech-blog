@@ -6,5 +6,12 @@ export default defineConfig({
 	useTabs: true,
 	singleQuote: true,
 	trailingComma: 'all',
-	ignorePatterns: ['dist/**', '.astro/**', 'node_modules/**', '.pnpm-store/**'],
+	ignorePatterns: [
+		'dist/**',
+		'.astro/**',
+		'node_modules/**',
+		'.pnpm-store/**',
+		// デジタル庁デザインシステムから改変せずに取り込んだ CSS
+		'src/styles/dads/**',
+	],
 });

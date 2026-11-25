@@ -38,6 +38,7 @@ export const AsLink = {
 	args: {
 		variant: 'outline',
 		href: '#tag-React',
-		slots: { default: 'React 1' },
+		count: 1,
+		slots: { default: 'React' },
 	},
 };

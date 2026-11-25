@@ -1,31 +1,17 @@
 ---
+import Breadcrumb from '../components/Breadcrumb.astro';
+import PageHeader from '../components/PageHeader.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="このサイトについて | いりりんご🍎web牧場" description="都内でエンジニアをしている、いりりんの個人技術ブログです。">
-	<div class="about">
-		<h1>このサイトについて</h1>
-		<p>こんにちは、都内でエンジニアをしているいりりんです。このサイトでは、試したことや作ったものを書き留めています。</p>
-	</div>
+<BaseLayout
+	title="このサイトについて | いりりんご🍎web牧場"
+	description="都内でエンジニアをしている、いりりんの個人技術ブログです。"
+>
+	<Breadcrumb items={[{ label: 'このサイトについて' }]} />
+	<PageHeader title="このサイトについて">
+		<p>
+			こんにちは、都内でエンジニアをしているいりりんです。このサイトでは、試したことや作ったものを書き留めています。
+		</p>
+	</PageHeader>
 </BaseLayout>
-
-<style>
-	.about {
-		max-width: 40em;
-		padding: 56px 0 70px;
-	}
-
-	h1 {
-		font-size: clamp(32px, 4vw, 48px);
-		line-height: 1.2;
-		letter-spacing: -0.015em;
-		margin: 0;
-	}
-
-	p {
-		font-size: 16px;
-		line-height: 32px;
-		margin: 32px 0 0;
-		text-align: justify;
-	}
-</style>

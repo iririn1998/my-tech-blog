@@ -1,0 +1,51 @@
+---
+/**
+ * パンくずリスト。DADS の「パンくずリスト」コンポーネントのマークアップに準拠する。
+ * 先頭は常に「トップ」。items の最後の要素を現在ページとして扱う。
+ */
+interface Props {
+	items: { label: string; href?: string }[];
+}
+
+const { items } = Astro.props;
+const trail = [{ label: 'トップ', href: '/' }, ...items];
+const labelId = 'breadcrumb-label';
+---
+
+<nav class="dads-breadcrumb" aria-labelledby={labelId}>
+	<span id={labelId} class="dads-u-visually-hidden">現在位置</span>
+	<p class="dads-breadcrumb__list">
+		{
+			trail.map((item, i) =>
+				i < trail.length - 1 && item.href ? (
+					<span class="dads-breadcrumb__item">
+						<a class="dads-breadcrumb__link" href={item.href}>
+							{item.label}
+						</a>
+						<span class="dads-breadcrumb__separator">
+							<svg
+								class="dads-breadcrumb__separator-icon"
+								width="12"
+								height="12"
+								viewBox="0 0 12 12"
+								aria-hidden="true"
+							>
+								<path d="M4.5 11L4 10.5L8 6.5L4 2.5L4.5 2L9 6.5L4.5 11Z" fill="currentcolor" />
+							</svg>
+						</span>
+					</span>
+				) : (
+					<span class="dads-breadcrumb__item" aria-current="page">
+						{item.label}
+					</span>
+				),
+			)
+		}
+	</p>
+</nav>
+
+<style>
+	.dads-breadcrumb {
+		padding-top: calc(16 / 16 * 1rem);
+	}
+</style>

@@ -14,7 +14,7 @@ export const SinglePost = {
 			{
 				title: 'React Server Components を実務に導入して分かったこと',
 				href: '#',
-				dateLabel: '07.18',
+				dateLabel: '2026.07.18',
 				datetime: '2026-07-18',
 			},
 		],
@@ -28,13 +28,13 @@ export const MultiplePosts = {
 			{
 				title: 'Playwright で E2E テストを安定させる7つの工夫',
 				href: '#',
-				dateLabel: '07.03',
+				dateLabel: '2026.07.03',
 				datetime: '2026-07-03',
 			},
 			{
 				title: 'Storybook を捨てて得たもの',
 				href: '#',
-				dateLabel: '06.06',
+				dateLabel: '2026.06.06',
 				datetime: '2026-06-06',
 			},
 		],
