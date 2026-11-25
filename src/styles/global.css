@@ -1,4 +1,16 @@
 @import './tokens.css';
+@import './dads/breadcrumb.css';
+@import './dads/button.css';
+@import './dads/chip-label.css';
+@import './dads/heading.css';
+@import './dads/link.css';
+@import './dads/list.css';
+@import './dads/toc.css';
+
+/*
+ * ベーススタイル
+ * リンク・フォーカスリングは DADS コードスニペットの global.css に準拠する。
+ */
 
 *,
 *::before,
@@ -7,34 +19,65 @@
 }
 
 html {
-	scroll-padding-top: 24px;
+	scrollbar-gutter: stable;
+	scroll-padding-top: calc(24 / 16 * 1rem);
+	font-family: var(--font-family-sans);
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
 }
 
 body {
 	margin: 0;
 	min-width: 320px;
-	background: var(--color-paper);
-	color: var(--color-text);
-	font-family: var(--font-body);
-	text-wrap: pretty;
+	background: var(--color-bg);
+	color: var(--color-text-body);
+	font-size: var(--font-size-16);
+	line-height: var(--line-height-170);
+	letter-spacing: 0.02em;
+	overflow-wrap: break-word;
 }
 
-h1,
-h2,
-h3,
-h4 {
-	font-family: var(--font-heading);
+img {
+	max-width: 100%;
+	height: auto;
 }
 
-a {
-	color: var(--color-accent-700);
+:where(a):any-link {
+	color: var(--color-primitive-blue-1000);
+	text-decoration: underline;
+	text-decoration-thickness: calc(1 / 16 * 1rem);
+	text-underline-offset: calc(3 / 16 * 1rem);
 }
 
-a:hover {
-	color: var(--color-accent-600);
+:where(a):visited {
+	color: var(--color-primitive-magenta-900);
+}
+
+@media (hover: hover) {
+	:where(a):hover {
+		color: var(--color-primitive-blue-900);
+		text-decoration-thickness: calc(3 / 16 * 1rem);
+	}
+}
+
+:where(a):active {
+	color: var(--color-primitive-orange-800);
+	text-decoration-thickness: calc(1 / 16 * 1rem);
 }
 
 :focus-visible {
-	outline: 2px solid var(--color-accent-700);
-	outline-offset: 3px;
+	outline: calc(4 / 16 * 1rem) solid var(--color-neutral-black);
+	outline-offset: calc(2 / 16 * 1rem);
+	border-radius: calc(4 / 16 * 1rem);
+	box-shadow: 0 0 0 calc(2 / 16 * 1rem) var(--color-primitive-yellow-300);
+}
+
+.dads-u-visually-hidden {
+	clip: rect(0 0 0 0) !important;
+	clip-path: inset(50%) !important;
+	height: 1px !important;
+	overflow: hidden !important;
+	position: absolute !important;
+	white-space: nowrap !important;
+	width: 1px !important;
 }

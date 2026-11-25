@@ -16,6 +16,7 @@ Astro の Content Collections で Markdown 記事を管理し、Cloudflare Worke
 
 - [Astro](https://astro.build/)
 - [Astro Content Collections](https://docs.astro.build/en/guides/content-collections/)
+- [デジタル庁デザインシステム](https://design.digital.go.jp/)（トークンは [`@digital-go-jp/design-tokens`](https://www.npmjs.com/package/@digital-go-jp/design-tokens)、コンポーネント CSS は `src/styles/dads/`）
 - [Storybook](https://storybook.js.org/)
 - [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) / [Oxlint](https://oxc.rs/docs/guide/usage/linter.html)
 - [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)

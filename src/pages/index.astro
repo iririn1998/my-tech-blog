@@ -3,7 +3,6 @@ import { getCollection } from 'astro:content';
 import ArticleCard from '../components/ArticleCard.astro';
 import FeaturedArticle from '../components/home/FeaturedArticle.astro';
 import HomeHero from '../components/home/HomeHero.astro';
-import SectionLabel from '../components/SectionLabel.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const posts = (await getCollection('blog')).sort(
@@ -18,55 +17,65 @@ const latest = posts.filter((post) => post.id !== featured.id);
 	description="Webフロントエンドを中心とした、個人の技術記録。試したこと、つまずいたこと、直したことを毎週書き留めています。"
 >
 	<HomeHero />
-	<FeaturedArticle
-		title={featured.data.title}
-		excerpt={featured.data.excerpt}
-		tag={featured.data.tags[0]}
-		href={`/posts/${featured.id}/`}
-		imageSrc="/images/mac-shortcuts-lgtm-image-maker/lgtm_image_creation.png"
-	/>
+	<section aria-labelledby="featured-heading" class="section">
+		<h2 id="featured-heading" class="dads-heading section-heading" data-size="24" data-chip>
+			特集記事
+		</h2>
+		<FeaturedArticle
+			title={featured.data.title}
+			excerpt={featured.data.excerpt}
+			tag={featured.data.tags[0]}
+			href={`/posts/${featured.id}/`}
+			date={featured.data.pubDate}
+			imageSrc="/images/mac-shortcuts-lgtm-image-maker/lgtm_image_creation.png"
+		/>
+	</section>
 	{
 		latest.length > 0 && (
-			<section aria-labelledby="latest-heading" class="latest">
-				<div class="label-wrap">
-					<SectionLabel as="h2" id="latest-heading">最新の記事</SectionLabel>
-				</div>
-				<div class="grid">
+			<section aria-labelledby="latest-heading" class="section">
+				<h2 id="latest-heading" class="dads-heading section-heading" data-size="24" data-chip>
+					最新の記事
+				</h2>
+				<ul class="card-list">
 					{latest.map((post) => (
-						<ArticleCard
-							title={post.data.title}
-							excerpt={post.data.excerpt}
-							tag={post.data.tags[0]}
-							href={`/posts/${post.id}/`}
-						/>
+						<li>
+							<ArticleCard
+								title={post.data.title}
+								excerpt={post.data.excerpt}
+								tag={post.data.tags[0]}
+								href={`/posts/${post.id}/`}
+								date={post.data.pubDate}
+							/>
+						</li>
 					))}
-				</div>
-				<p class="tags-link"><a href="/tags/">タグから探す →</a></p>
+				</ul>
+				<p class="more">
+					<a href="/tags/">タグから記事を探す</a>
+				</p>
 			</section>
 		)
 	}
 </BaseLayout>
 
 <style>
-	.latest {
-		padding: 14px 0 70px;
+	.section + .section {
+		margin-top: calc(64 / 16 * 1rem);
 	}
 
-	.label-wrap {
-		margin: 0 0 24px;
+	.section-heading {
+		margin: 0 0 calc(24 / 16 * 1rem);
 	}
 
-	.grid {
+	.card-list {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-		gap: 42px clamp(28px, 4vw, 64px);
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+		gap: calc(24 / 16 * 1rem);
+		margin: 0;
+		padding: 0;
+		list-style: none;
 	}
 
-	.tags-link {
-		margin: 42px 0 0;
-	}
-
-	.tags-link a {
-		font-size: 14.5px;
+	.more {
+		margin: calc(32 / 16 * 1rem) 0 0;
 	}
 </style>

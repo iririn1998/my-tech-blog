@@ -1,34 +1,43 @@
 /*
- * デザイントークン — claude_design (broadsheet 新聞紙面調) の近似値。
- * 元デザインシステムの styles.css が未共有のため、プレビューの印象から採色。
+ * デザイントークン
+ *
+ * デジタル庁デザインシステム (DADS) の公式トークン (@digital-go-jp/design-tokens) を読み込み、
+ * その上にキーカラーとサイト内で使う役割名を定義する。
+ * 色や文字サイズの値はここで直接決めず、必ず DADS のトークンを参照する。
  */
+@import '@digital-go-jp/design-tokens/dist/tokens.css';
+
 :root {
-	/* 紙面 */
-	--color-paper: #f8f4ea;
-	--color-text: #211d1a;
+	/*
+	 * キーカラー (DADS の既定は blue)。
+	 * DADS のコンポーネント CSS は --color-key-* を参照するので、
+	 * 別の色相にしたい場合はここの primitive 名だけを差し替える。
+	 */
+	--color-key-50: var(--color-primitive-blue-50);
+	--color-key-100: var(--color-primitive-blue-100);
+	--color-key-200: var(--color-primitive-blue-200);
+	--color-key-300: var(--color-primitive-blue-300);
+	--color-key-400: var(--color-primitive-blue-400);
+	--color-key-500: var(--color-primitive-blue-500);
+	--color-key-600: var(--color-primitive-blue-600);
+	--color-key-700: var(--color-primitive-blue-700);
+	--color-key-800: var(--color-primitive-blue-800);
+	--color-key-900: var(--color-primitive-blue-900);
+	--color-key-1000: var(--color-primitive-blue-1000);
+	--color-key-1100: var(--color-primitive-blue-1100);
+	--color-key-1200: var(--color-primitive-blue-1200);
 
-	/* アクセント (朱色) */
-	--color-accent-600: #c8502e;
-	--color-accent-700: #b03d20;
+	/* 役割別の色 */
+	--color-bg: var(--color-neutral-white);
+	--color-bg-subtle: var(--color-neutral-solid-gray-50);
+	--color-text-body: var(--color-neutral-solid-gray-800);
+	--color-text-strong: var(--color-neutral-solid-gray-900);
+	--color-text-description: var(--color-neutral-solid-gray-600);
+	--color-border: var(--color-neutral-solid-gray-420);
+	--color-border-subtle: var(--color-neutral-solid-gray-200);
 
-	/* 第2アクセント (コード文字列などの深緑) */
-	--color-accent-2-700: #23695a;
-
-	/* ニュートラル */
-	--color-neutral-100: #eee8da;
-	--color-neutral-500: #8f8878;
-
-	/* CMYK 版色 (版ズレ表現用) */
-	--color-plate-c: #00aeef;
-	--color-plate-m: #ec008c;
-	--color-plate-y: #f0cf00;
-
-	/* 形状・余白 */
-	--radius-sm: 3px;
-	--space-2: 8px;
-
-	/* フォント */
-	--font-heading: 'Noto Sans JP', sans-serif;
-	--font-body: 'Noto Sans JP', sans-serif;
-	--font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+	/* レイアウト */
+	--layout-max-width: 1200px;
+	--layout-gutter: clamp(16px, 4vw, 40px);
+	--measure-body: 42em;
 }

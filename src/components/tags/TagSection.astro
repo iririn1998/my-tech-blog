@@ -1,59 +1,81 @@
 ---
 /**
- * タグ別一覧ページの1タグ分の節。タグ見出し + 記事の点線リーダーリスト。
+ * タグ別一覧ページの1タグ分の節。タグ見出し + 記事リスト (タイトル + 公開日)。
  */
 interface Props {
 	name: string;
 	posts: { title: string; href: string; dateLabel: string; datetime: string }[];
 }
 
-import LeaderRow from '../LeaderRow.astro';
 import { getTagId } from '../../utils/tag';
 
 const { name, posts } = Astro.props;
+const id = getTagId(name);
 ---
 
-<section id={getTagId(name)}>
-	<h2>
+<section {id} class="tag-section" aria-labelledby={`${id}-heading`}>
+	<h2 id={`${id}-heading`} class="dads-heading heading" data-size="20" data-chip>
 		{name}<span class="count">{posts.length}記事</span>
 	</h2>
-	<div class="list">
+	<ul class="list">
 		{
 			posts.map((post) => (
-				<LeaderRow href={post.href}>
-					{post.title}
-						<time slot="trailing" class="date" datetime={post.datetime}>
-							{post.dateLabel}
-						</time>
-				</LeaderRow>
+				<li>
+					<a href={post.href}>{post.title}</a>
+					<time class="date" datetime={post.datetime}>
+						{post.dateLabel}
+					</time>
+				</li>
 			))
 		}
-	</div>
+	</ul>
 </section>
 
 <style>
-	h2 {
-		display: flex;
-		align-items: baseline;
-		gap: 12px;
-		font-size: 22px;
-		line-height: 1.4;
+	.tag-section {
+		border: 1px solid var(--color-border);
+		border-radius: var(--border-radius-16);
+		padding: calc(24 / 16 * 1rem);
+	}
+
+	.heading {
 		margin: 0;
 	}
 
 	.count {
-		font-size: 14px;
-		font-weight: 400;
-		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		margin-left: calc(12 / 16 * 1rem);
+		color: var(--color-text-description);
+		font-size: var(--font-size-14);
+		font-weight: var(--font-weight-400);
+		letter-spacing: 0;
 	}
 
 	.list {
-		display: grid;
-		gap: 12px;
-		margin: 18px 0 0;
+		margin: calc(16 / 16 * 1rem) 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.list li {
+		display: flex;
+		flex-direction: column;
+		gap: calc(4 / 16 * 1rem);
+		padding: calc(12 / 16 * 1rem) 0;
+	}
+
+	.list li + li {
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	.list li:last-child {
+		padding-bottom: 0;
 	}
 
 	.date {
-		color: color-mix(in srgb, var(--color-text) 70%, transparent);
+		color: var(--color-text-description);
+		font-size: var(--font-size-14);
+		line-height: var(--line-height-130);
+		letter-spacing: 0;
+		font-feature-settings: 'tnum' 1;
 	}
 </style>

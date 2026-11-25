@@ -1,98 +1,160 @@
 ---
 /**
- * トップページの特集記事セクション。テキスト 7 : 写真 5 の2カラム。
+ * トップページの特集記事。テキスト + 画像の横長カード (狭い画面では画像が上)。
+ * 見出しは呼び出し側のセクション見出しの下に置く想定で h3 を使う。
  */
 interface Props {
 	title: string;
 	excerpt: string;
 	tag: string;
 	href: string;
+	date?: Date | string;
 	imageSrc?: string;
 }
 
-import CmykFigure from '../CmykFigure.astro';
+import { formatFullDate, formatIsoDate } from '../../utils/date';
 import Tag from '../Tag.astro';
 
-const { title, excerpt, tag, href, imageSrc } = Astro.props;
+const { title, excerpt, tag, href, date, imageSrc } = Astro.props;
+const publishedAt = date ? new Date(date) : undefined;
 ---
 
-<section aria-label="特集記事" class="featured">
-	<article>
-		<div class="tags">
+<article class="featured">
+	<div class="body">
+		<div class="meta">
 			<Tag variant="accent">{tag}</Tag>
-			<Tag variant="neutral">特集</Tag>
+			{
+				publishedAt && (
+					<time class="date" datetime={formatIsoDate(publishedAt)}>
+						{formatFullDate(publishedAt)}
+					</time>
+				)
+			}
 		</div>
-		<h2><a href={href}>{title}</a></h2>
+		<h3 class="title"><a href={href}>{title}</a></h3>
 		<p class="excerpt">{excerpt}</p>
-		<p class="more"><a class="btn" href={href}>続きを読む</a></p>
-	</article>
-	<CmykFigure aspectRatio="3 / 2" placeholder="特集記事の写真" src={imageSrc} alt={imageSrc ? title : ''} />
-</section>
+		<p class="more">
+			<a class="dads-button" data-size="md" data-type="solid-fill" href={href}>
+				続きを読む<span class="dads-u-visually-hidden">：{title}</span>
+			</a>
+		</p>
+	</div>
+	<div class="media">
+		{
+			imageSrc ? (
+				<img src={imageSrc} alt="" loading="lazy" decoding="async" />
+			) : (
+				<span class="placeholder">画像なし</span>
+			)
+		}
+	</div>
+</article>
 
 <style>
 	.featured {
 		display: grid;
-		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-		gap: 28px clamp(28px, 5vw, 80px);
-		align-items: center;
-		padding: 42px 0 56px;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-areas:
+			'media'
+			'body';
+		overflow: hidden;
+		border: 1px solid var(--color-border);
+		border-radius: var(--border-radius-16);
+		background: var(--color-bg);
 	}
 
-	@media (max-width: 800px) {
+	@media (min-width: 800px) {
 		.featured {
-			grid-template-columns: minmax(0, 1fr);
+			grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+			grid-template-areas: 'body media';
 		}
 	}
 
-	.tags {
+	.body {
+		grid-area: body;
+		padding: calc(24 / 16 * 1rem);
+	}
+
+	@media (min-width: 800px) {
+		.body {
+			align-self: center;
+			padding: calc(40 / 16 * 1rem);
+		}
+	}
+
+	.meta {
 		display: flex;
-		gap: var(--space-2);
-		margin: 0 0 16px;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: calc(8 / 16 * 1rem) calc(16 / 16 * 1rem);
 	}
 
-	h2 {
-		font-size: clamp(30px, 3.4vw, 42px);
-		line-height: 1.25;
-		letter-spacing: -0.015em;
-		margin: 0;
+	.date {
+		color: var(--color-text-description);
+		font-size: var(--font-size-14);
+		line-height: var(--line-height-130);
+		letter-spacing: 0;
+		font-feature-settings: 'tnum' 1;
 	}
 
-	h2 a {
-		color: inherit;
-		text-decoration: none;
+	/* DADS タイポグラフィ: Std-24B-150 → 広い画面では Std-28B-150 */
+	.title {
+		margin: calc(16 / 16 * 1rem) 0 0;
+		font-size: var(--font-size-24);
+		font-weight: var(--font-weight-700);
+		line-height: var(--line-height-150);
+		letter-spacing: 0.02em;
 	}
 
-	h2 a:hover {
-		color: var(--color-accent-700);
+	@media (min-width: 800px) {
+		.title {
+			font-size: var(--font-size-28);
+			letter-spacing: 0.01em;
+		}
+	}
+
+	.title a:any-link {
+		color: var(--color-text-strong);
 	}
 
 	.excerpt {
-		font-size: 15.5px;
-		line-height: 28px;
-		margin: 18px 0 0;
-		max-width: 40em;
-		color: color-mix(in srgb, var(--color-text) 78%, transparent);
-		text-align: justify;
+		margin: calc(16 / 16 * 1rem) 0 0;
+		font-size: var(--font-size-16);
+		line-height: var(--line-height-170);
 	}
 
 	.more {
-		margin: 28px 0 0;
+		margin: calc(24 / 16 * 1rem) 0 0;
 	}
 
-	.btn {
-		display: inline-block;
-		font-family: var(--font-heading);
-		font-size: 14px;
-		font-weight: 600;
-		color: var(--color-text);
-		text-decoration: none;
-		padding: 10px 20px;
-		border: 1px solid color-mix(in srgb, var(--color-text) 60%, transparent);
-		border-radius: var(--radius-sm);
+	.media {
+		grid-area: media;
+		display: grid;
+		place-items: center;
+		aspect-ratio: 3 / 2;
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-bg-subtle);
 	}
 
-	.btn:hover {
-		color: var(--color-accent-700);
-		border-color: var(--color-accent-700);
+	@media (min-width: 800px) {
+		.media {
+			aspect-ratio: auto;
+			min-height: 100%;
+			border-bottom: 0;
+			border-left: 1px solid var(--color-border);
+		}
+	}
+
+	.media img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		max-height: calc(320 / 16 * 1rem);
+		object-fit: contain;
+	}
+
+	.placeholder {
+		color: var(--color-text-description);
+		font-size: var(--font-size-14);
 	}
 </style>
