@@ -19,7 +19,6 @@
 	},
 	"dependencies": {
 		"@astrojs/sitemap": "^3.7.3",
-		"@digital-go-jp/design-tokens": "^2.1.0",
 		"astro": "^7.1.1"
 	},
 	"devDependencies": {

@@ -1,81 +1,94 @@
 ---
 import { getCollection } from 'astro:content';
-import ArticleCard from '../components/ArticleCard.astro';
+import ArticleListItem from '../components/ArticleListItem.astro';
 import FeaturedArticle from '../components/home/FeaturedArticle.astro';
 import HomeHero from '../components/home/HomeHero.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import TagCloud from '../components/tags/TagCloud.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getReadingMinutes, getTitleTransitionName } from '../utils/post';
+import { getTagId } from '../utils/tag';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 const featured = posts.find((post) => post.data.featured) ?? posts[0];
 const latest = posts.filter((post) => post.id !== featured.id);
+
+// 記事数の多い順（同数なら新しい記事のタグが先）
+const tagCounts = new Map<string, number>();
+for (const post of posts) {
+	for (const tag of post.data.tags) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+}
+const tags = [...tagCounts.entries()]
+	.map(([name, count]) => ({ name, count }))
+	.sort((a, b) => b.count - a.count);
 ---
 
 <BaseLayout
 	title="いりりんご🍎web牧場 — 個人の技術記録"
 	description="Webフロントエンドを中心とした、個人の技術記録。試したこと、つまずいたこと、直したことを毎週書き留めています。"
 >
-	<HomeHero />
+	<HomeHero tags={tags.slice(0, 4)} />
+
 	<section aria-labelledby="featured-heading" class="section">
-		<h2 id="featured-heading" class="dads-heading section-heading" data-size="24" data-chip>
-			特集記事
-		</h2>
+		<SectionHeading index="01" id="featured-heading" title="特集記事" />
 		<FeaturedArticle
 			title={featured.data.title}
 			excerpt={featured.data.excerpt}
-			tag={featured.data.tags[0]}
+			tags={featured.data.tags}
 			href={`/posts/${featured.id}/`}
 			date={featured.data.pubDate}
-			imageSrc="/images/mac-shortcuts-lgtm-image-maker/lgtm_image_creation.png"
+			fileName={`posts/${featured.id}.md`}
+			readingMinutes={getReadingMinutes(featured.body)}
+			transitionName={getTitleTransitionName(featured.id)}
 		/>
 	</section>
+
 	{
 		latest.length > 0 && (
 			<section aria-labelledby="latest-heading" class="section">
-				<h2 id="latest-heading" class="dads-heading section-heading" data-size="24" data-chip>
-					最新の記事
-				</h2>
-				<ul class="card-list">
+				<SectionHeading index="02" id="latest-heading" title="最新の記事">
+					<a class="link-wipe" href="/tags/">
+						タグから探す
+					</a>
+				</SectionHeading>
+				<ul class="list">
 					{latest.map((post) => (
-						<li>
-							<ArticleCard
+						<li class="reveal">
+							<ArticleListItem
 								title={post.data.title}
 								excerpt={post.data.excerpt}
-								tag={post.data.tags[0]}
+								tags={post.data.tags}
 								href={`/posts/${post.id}/`}
 								date={post.data.pubDate}
+								readingMinutes={getReadingMinutes(post.body)}
+								transitionName={getTitleTransitionName(post.id)}
 							/>
 						</li>
 					))}
 				</ul>
-				<p class="more">
-					<a href="/tags/">タグから記事を探す</a>
-				</p>
 			</section>
 		)
 	}
+
+	<section aria-labelledby="tags-heading" class="section">
+		<SectionHeading index={latest.length > 0 ? '03' : '02'} id="tags-heading" title="タグから探す" />
+		<div class="reveal">
+			<TagCloud tags={tags} hrefFor={(name) => `/tags/#${getTagId(name)}`} />
+		</div>
+	</section>
 </BaseLayout>
 
 <style>
-	.section + .section {
-		margin-top: calc(64 / 16 * 1rem);
+	.section {
+		padding: 16px 0 64px;
 	}
 
-	.section-heading {
-		margin: 0 0 calc(24 / 16 * 1rem);
-	}
-
-	.card-list {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-		gap: calc(24 / 16 * 1rem);
+	.list {
 		margin: 0;
 		padding: 0;
+		border-top: 1px solid var(--color-line);
 		list-style: none;
-	}
-
-	.more {
-		margin: calc(32 / 16 * 1rem) 0 0;
 	}
 </style>

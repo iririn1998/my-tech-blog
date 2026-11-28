@@ -16,6 +16,7 @@ export const Default = {
 			{ slug: 'sec4', text: '成果と数字' },
 			{ slug: 'sec5', text: 'まとめ' },
 		],
+		readingMinutes: 12,
 	},
 };
 

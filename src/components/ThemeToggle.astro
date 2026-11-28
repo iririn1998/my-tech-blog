@@ -1,0 +1,86 @@
+---
+/**
+ * テーマ切替ボタン。太陽と月のアイコンが回転しながら入れ替わる。
+ * 切り替え処理と円形リビールは src/scripts/theme.ts。
+ */
+---
+
+<button class="theme-toggle" type="button" data-theme-toggle aria-label="テーマを切り替え">
+	<svg class="icon sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+		<circle cx="12" cy="12" r="4.5"></circle>
+		<path
+			d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"
+		></path>
+	</svg>
+	<svg class="icon moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+		<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path>
+	</svg>
+</button>
+
+<script>
+	import { initThemeToggle } from '../scripts/theme';
+
+	initThemeToggle();
+</script>
+
+<style>
+	.theme-toggle {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-md);
+		background: var(--color-bg);
+		color: var(--color-ink);
+		cursor: pointer;
+		transition: border-color var(--dur-fast) var(--ease-standard);
+	}
+
+	@media (hover: hover) {
+		.theme-toggle:hover {
+			border-color: var(--color-line-2);
+		}
+	}
+
+	.icon {
+		grid-area: 1 / 1;
+		width: 18px;
+		height: 18px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition:
+			transform var(--dur-base) var(--ease-out),
+			opacity var(--dur-base) var(--ease-out);
+	}
+
+	.moon {
+		opacity: 0;
+		transform: rotate(-90deg) scale(0.5);
+	}
+
+	:global(:root[data-theme='dark']) .sun {
+		opacity: 0;
+		transform: rotate(90deg) scale(0.5);
+	}
+
+	:global(:root[data-theme='dark']) .moon {
+		opacity: 1;
+		transform: none;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root:not([data-theme])) .sun {
+			opacity: 0;
+			transform: rotate(90deg) scale(0.5);
+		}
+
+		:global(:root:not([data-theme])) .moon {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>

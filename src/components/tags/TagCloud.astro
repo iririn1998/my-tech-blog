@@ -1,22 +1,25 @@
 ---
 /**
- * タグ別一覧ページ上部のタグ一覧。各タグはページ内の節へのリンク。
+ * タグの一覧。各タグはリンクで、件数を添える。
+ * 既定ではページ内の節 (#tag-xxx) へリンクする。別ページへ飛ばす場合は hrefFor を渡す。
  */
+import { getTagId } from '../../utils/tag';
+import Tag from '../Tag.astro';
+
 interface Props {
 	tags: { name: string; count: number }[];
+	/** タグ名からリンク先を作る関数（既定はページ内リンク） */
+	hrefFor?: (name: string) => string;
 }
 
-import Tag from '../Tag.astro';
-import { getTagId } from '../../utils/tag';
-
-const { tags } = Astro.props;
+const { tags, hrefFor = (name: string) => `#${getTagId(name)}` } = Astro.props;
 ---
 
 <ul class="cloud">
 	{
 		tags.map((tag) => (
 			<li>
-				<Tag href={`#${getTagId(tag.name)}`} count={tag.count}>
+				<Tag href={hrefFor(tag.name)} count={tag.count}>
 					{tag.name}
 				</Tag>
 			</li>
@@ -28,7 +31,7 @@ const { tags } = Astro.props;
 	.cloud {
 		display: flex;
 		flex-wrap: wrap;
-		gap: calc(8 / 16 * 1rem);
+		gap: 10px;
 		margin: 0;
 		padding: 0;
 		list-style: none;

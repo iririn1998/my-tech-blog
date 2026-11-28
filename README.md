@@ -7,16 +7,37 @@ Astro の Content Collections で Markdown 記事を管理し、Cloudflare Worke
 ## 主な機能
 
 - 注目記事と最新記事を表示するトップページ
-- Markdown から生成する記事ページと目次
+- Markdown から生成する記事ページと目次（現在地の表示・読了率・残り時間つき）
 - タグ別の記事一覧
+- ライト / ダークテーマの切り替え（OS の設定にも追従）
+- コードブロックのコピー、行番号、ファイル名表示、行ハイライト
 - canonical URL、Open Graph、サイトマップの生成
 - Storybook による UI コンポーネントの確認
+
+## デザインとモーション
+
+デザインのコンセプトは「Quiet Motion — 読むことを邪魔しない動き」です。アニメーションは装飾ではなく、現在地・進捗・状態の変化を伝えるためだけに使います。
+
+1. 本文は動かさない（記事本文・コード・画像は表示後に動かさない）
+2. 動きは状態を伝えるときだけ（ホバー・現在地・進捗・完了）
+3. 速く、一度だけ（操作への反応は 200ms 以内、スクロールでの出現は初回のみ）
+4. いつでも減らせる（`prefers-reduced-motion` では即時切り替え）
+
+色・文字・動きの値は `src/styles/tokens.css` にまとめています。動きの時間は `--dur-instant` (120ms) / `--dur-fast` (200ms) / `--dur-base` (320ms) / `--dur-slow` (560ms)、加減速は `--ease-out` / `--ease-standard` / `--ease-in` の 3 種類です。
+
+実装は CSS の新しい仕様を中心にしています。未対応のブラウザでは動きなしで同じ内容が表示されます。
+
+- ページ遷移: View Transitions API（`@view-transition` によるページ間遷移。一覧の記事タイトルが記事ページの見出しへ変形）
+- スクロールで現れる要素・ページトップへ戻るボタン: Scroll-driven Animations（`animation-timeline`）
+- 目次シート: `<dialog>` と `@starting-style`
+- テーマ切替: `document.startViewTransition()` による円形リビール
 
 ## 技術スタック
 
 - [Astro](https://astro.build/)
 - [Astro Content Collections](https://docs.astro.build/en/guides/content-collections/)
-- [デジタル庁デザインシステム](https://design.digital.go.jp/)（トークンは [`@digital-go-jp/design-tokens`](https://www.npmjs.com/package/@digital-go-jp/design-tokens)、コンポーネント CSS は `src/styles/dads/`）
+- フォント: [IBM Plex Sans JP](https://fonts.google.com/specimen/IBM+Plex+Sans+JP) / [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono)（Google Fonts）
+- コードハイライト: [Shiki](https://shiki.style/)（独自テーマ `src/markdown/web-ranch-theme.mjs`）
 - [Storybook](https://storybook.js.org/)
 - [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) / [Oxlint](https://oxc.rs/docs/guide/usage/linter.html)
 - [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
@@ -91,6 +112,14 @@ showToc: true
 
 記事内の画像は `public/images/` に配置し、`/images/...` から参照します。
 
+コードブロックでは、言語名の後ろにファイル名とハイライトする行を指定できます。
+
+````md
+```ts title="user.ts" {1,4-5}
+import type { Post } from './post';
+```
+````
+
 ## ディレクトリ構成
 
 ```text
@@ -101,9 +130,11 @@ showToc: true
 │   ├── components/        # UI コンポーネントと Storybook stories
 │   ├── content/blog/      # Markdown 記事
 │   ├── layouts/           # 共通・記事レイアウト
+│   ├── markdown/          # コードブロックの Shiki テーマと transformer
 │   ├── pages/             # Astro のページと動的ルート
+│   ├── scripts/           # テーマ切替・記事ページ（目次・読了率・コピー）・トーストのスクリプト
 │   ├── styles/            # グローバルスタイルとデザイントークン
-│   ├── utils/             # 日付・タグ関連のユーティリティ
+│   ├── utils/             # 日付・タグ・読了目安のユーティリティ
 │   └── content.config.ts  # blog コレクションのスキーマ
 ├── astro.config.mjs       # Astro、サイト URL、サイトマップの設定
 ├── wrangler.jsonc         # Cloudflare Workers Static Assets の設定

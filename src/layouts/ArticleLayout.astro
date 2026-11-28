@@ -1,13 +1,22 @@
 ---
 /**
- * 記事ページのレイアウト。本文 + sticky 目次の2カラム。
+ * 記事ページのレイアウト。本文 + 目次の 2 カラム（狭い画面では目次はシート）。
  * 本文 (Markdown レンダリング結果) は default スロットで受け取る。
- * 本文の文字組み・見出し・表・引用などは DADS のタイポグラフィとコンポーネントの値に合わせる。
+ *
+ * 本文は表示後に動かさない。動くのは読了バー・目次・見出しアンカー・コピーボタンなど周辺の UI だけ。
  */
 import ArticleHeader from '../components/article/ArticleHeader.astro';
 import TableOfContents from '../components/article/TableOfContents.astro';
 import Breadcrumb from '../components/Breadcrumb.astro';
+import { formatFullDate, formatIsoDate } from '../utils/date';
 import BaseLayout from './BaseLayout.astro';
+
+interface AdjacentPost {
+	title: string;
+	href: string;
+	date: Date;
+	transitionName?: string;
+}
 
 interface Props {
 	title: string;
@@ -16,254 +25,748 @@ interface Props {
 	tags: string[];
 	headings?: { slug: string; text: string }[];
 	showToc?: boolean;
+	readingMinutes?: number;
+	/** 記事タイトルに付ける view-transition-name */
+	transitionName?: string;
+	/** ひとつ前（古い）の記事 */
+	prev?: AdjacentPost;
+	/** ひとつ後（新しい）の記事 */
+	next?: AdjacentPost;
 }
 
-const { title, excerpt, date, tags, headings = [], showToc = true } = Astro.props;
+const {
+	title,
+	excerpt,
+	date,
+	tags,
+	headings = [],
+	showToc = true,
+	readingMinutes,
+	transitionName,
+	prev,
+	next,
+} = Astro.props;
 const hasToc = showToc && headings.length > 0;
 ---
 
-<BaseLayout title={`${title} | いりりんご🍎web牧場`} description={excerpt} type="article">
+<BaseLayout
+	title={`${title} | いりりんご🍎web牧場`}
+	description={excerpt}
+	type="article"
+	contextTitle={title}
+>
 	<Breadcrumb items={[{ label: title }]} />
-	<ArticleHeader title={title} date={date} tags={tags} />
+	<ArticleHeader
+		title={title}
+		date={date}
+		tags={tags}
+		excerpt={excerpt}
+		readingMinutes={readingMinutes}
+		sectionCount={hasToc ? headings.length : undefined}
+		transitionName={transitionName}
+	/>
 	<div class:list={['grid', { 'with-toc': hasToc }]}>
 		{
 			hasToc && (
-				<div class="toc-wrap">
-					<TableOfContents headings={headings} />
+				<div class="toc-col">
+					<TableOfContents headings={headings} readingMinutes={readingMinutes} />
 				</div>
 			)
 		}
-		<article class="article-body">
-			<slot />
-		</article>
+		<div class="body-col">
+			<article class="prose" data-article-body data-reading-minutes={readingMinutes}>
+				<slot />
+			</article>
+			<footer class="article-end">
+				<p class="done" data-read-done>
+					<svg class="done-icon" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+						<circle cx="14" cy="14" r="12"></circle>
+						<path d="M9 14.5l3.4 3.2L19 10.5"></path>
+					</svg>
+					<span>最後まで読んでいただき、ありがとうございました。</span>
+				</p>
+				{
+					(prev || next) && (
+						<nav class="pager" aria-label="前後の記事">
+							{prev ? (
+								<a class="pager-card" href={prev.href}>
+									<span class="pager-label mono">← 前の記事</span>
+									<span
+										class="pager-title"
+										style={
+											prev.transitionName
+												? `view-transition-name: ${prev.transitionName}`
+												: undefined
+										}
+									>
+										<span class="underline">{prev.title}</span>
+									</span>
+									<time class="pager-date mono" datetime={formatIsoDate(prev.date)}>
+										{formatFullDate(prev.date)}
+									</time>
+								</a>
+							) : (
+								<p class="pager-empty">これより前の記事はありません</p>
+							)}
+							{next ? (
+								<a class="pager-card is-next" href={next.href}>
+									<span class="pager-label mono">次の記事 →</span>
+									<span
+										class="pager-title"
+										style={
+											next.transitionName
+												? `view-transition-name: ${next.transitionName}`
+												: undefined
+										}
+									>
+										<span class="underline">{next.title}</span>
+									</span>
+									<time class="pager-date mono" datetime={formatIsoDate(next.date)}>
+										{formatFullDate(next.date)}
+									</time>
+								</a>
+							) : (
+								<p class="pager-empty">次の記事は準備中です</p>
+							)}
+						</nav>
+					)
+				}
+			</footer>
+		</div>
 	</div>
-	<p class="back"><a href="/">トップへ戻る</a></p>
 </BaseLayout>
+
+<script>
+	import { initArticle } from '../scripts/article';
+
+	initArticle();
+</script>
 
 <style>
 	.grid {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		gap: calc(32 / 16 * 1rem) clamp(40px, 5vw, 80px);
+		gap: 0 80px;
 		align-items: start;
-		padding-top: calc(40 / 16 * 1rem);
+		padding-top: 24px;
 	}
 
 	.grid.with-toc {
-		grid-template-columns: minmax(0, 1fr) 280px;
-		grid-template-areas: 'article toc';
+		grid-template-columns: minmax(0, 1fr) 260px;
+		grid-template-areas: 'body toc';
 	}
 
-	.article-body {
-		grid-area: article;
+	.body-col {
+		grid-area: body;
+		min-width: 0;
 	}
 
-	.toc-wrap {
+	.toc-col {
 		grid-area: toc;
 		align-self: stretch;
 	}
 
-	@media (max-width: 960px) {
+	@media (max-width: 1023px) {
 		.grid.with-toc {
 			grid-template-columns: minmax(0, 1fr);
-			grid-template-areas:
-				'toc'
-				'article';
+			grid-template-areas: 'body';
+		}
+
+		.toc-col {
+			grid-area: auto;
 		}
 	}
 
-	.back {
+	/* ---- 本文: 17px / 行間 1.95 / 最大 720px ---- */
+	.prose {
 		max-width: var(--measure-body);
-		margin: calc(64 / 16 * 1rem) 0 0;
-		border-top: 1px solid var(--color-border);
-		padding-top: calc(24 / 16 * 1rem);
+		padding-top: 40px;
+		color: var(--color-ink-2);
+		font-size: 1.0625rem;
+		line-height: 1.95;
+		counter-reset: section;
 	}
 
-	/* ---- 本文 (DADS タイポグラフィ: Std-16N-175) ---- */
-	.article-body {
-		max-width: var(--measure-body);
-		font-size: var(--font-size-16);
-		line-height: var(--line-height-175);
-		letter-spacing: 0.02em;
-	}
-
-	.article-body > :global(:first-child) {
+	.prose > :global(:first-child) {
 		margin-top: 0;
 	}
 
-	.article-body :global(p) {
-		margin: calc(24 / 16 * 1rem) 0 0;
+	.prose :global(p) {
+		margin: 1.6em 0 0;
 	}
 
-	/* 見出し: h2 は DADS 見出しの「チップ」付き */
-	.article-body :global(h2) {
+	.prose :global(strong) {
+		color: var(--color-ink);
+		font-weight: 700;
+	}
+
+	.prose :global(a:not(.heading-anchor)) {
+		color: var(--color-leaf-2);
+		text-decoration: none;
+		background:
+			linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat,
+			linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+		padding-bottom: 1px;
+		-webkit-box-decoration-break: clone;
+		box-decoration-break: clone;
+		transition: background-size var(--dur-fast) var(--ease-standard);
+	}
+
+	@media (hover: hover) {
+		.prose :global(a:not(.heading-anchor):hover) {
+			background-size:
+				100% 2px,
+				100% 1px;
+		}
+	}
+
+	/* 見出し: h2 には目次と同じ番号 (01, 02…) を付ける */
+	.prose :global(h2) {
 		position: relative;
-		margin: calc(64 / 16 * 1rem) 0 0;
-		padding-left: calc(1em / 3 + 0.5em);
-		color: var(--color-text-strong);
-		font-size: var(--font-size-24);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-150);
-		letter-spacing: 0.02em;
+		margin: 76px 0 0;
+		color: var(--color-ink);
+		font-size: 1.75rem;
+		font-weight: 700;
+		line-height: 1.45;
+		letter-spacing: 0.01em;
 	}
 
-	.article-body :global(h2)::before {
+	.prose :global(h2)::before {
+		display: inline-block;
+		margin-right: 14px;
+		color: var(--color-leaf-2);
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		font-weight: 500;
+		letter-spacing: 0;
+		vertical-align: 0.25em;
+		content: counter(section, decimal-leading-zero);
+		counter-increment: section;
+	}
+
+	.prose :global(h3) {
+		position: relative;
+		margin: 48px 0 0;
+		color: var(--color-ink);
+		font-size: 1.3125rem;
+		font-weight: 700;
+		line-height: 1.5;
+	}
+
+	.prose :global(h4) {
+		margin: 40px 0 0;
+		color: var(--color-ink);
+		font-size: 1.125rem;
+		font-weight: 700;
+		line-height: 1.6;
+	}
+
+	/* 見出しアンカー (article.ts が追加): ホバーで左の余白に現れる */
+	.prose :global(.heading-anchor) {
 		position: absolute;
-		top: calc(0.5lh - 0.45em);
-		bottom: calc(0.5lh - 0.55em);
-		left: 0;
-		width: calc(1em / 3);
-		background-color: var(--color-key-900);
-		content: '';
+		top: 50%;
+		left: -44px;
+		display: grid;
+		place-items: center;
+		width: 32px;
+		height: 32px;
+		margin-top: -16px;
+		border-radius: 7px;
+		color: var(--color-leaf-2);
+		font: 700 1.125rem/1 var(--font-mono);
+		text-decoration: none;
+		opacity: 0;
+		transform: translateX(6px);
+		transition:
+			opacity var(--dur-fast) var(--ease-standard),
+			transform var(--dur-fast) var(--ease-standard),
+			background-color var(--dur-instant) var(--ease-standard);
 	}
 
-	@media (forced-colors: active) {
-		.article-body :global(h2)::before {
-			background-color: CanvasText;
+	.prose :global(:is(h2, h3):hover .heading-anchor),
+	.prose :global(.heading-anchor:focus-visible) {
+		opacity: 1;
+		transform: none;
+	}
+
+	@media (hover: hover) {
+		.prose :global(.heading-anchor:hover) {
+			background: var(--color-leaf-soft);
 		}
 	}
 
-	.article-body :global(h3) {
-		margin: calc(48 / 16 * 1rem) 0 0;
-		color: var(--color-text-strong);
-		font-size: var(--font-size-20);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-150);
-		letter-spacing: 0.02em;
-	}
-
-	.article-body :global(h4) {
-		margin: calc(40 / 16 * 1rem) 0 0;
-		color: var(--color-text-strong);
-		font-size: var(--font-size-18);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-160);
-		letter-spacing: 0.02em;
-	}
-
-	@media (min-width: 768px) {
-		.article-body :global(h2) {
-			font-size: var(--font-size-28);
-			letter-spacing: 0.01em;
-		}
-
-		.article-body :global(h3) {
-			font-size: var(--font-size-22);
-		}
-
-		.article-body :global(h4) {
-			font-size: var(--font-size-20);
-			line-height: var(--line-height-150);
+	/* 余白が足りない画面・タッチ操作では見出しの後ろに常に表示する */
+	@media (max-width: 1180px), (hover: none) {
+		.prose :global(.heading-anchor) {
+			position: static;
+			display: inline-grid;
+			margin: 0 0 0 4px;
+			vertical-align: middle;
+			opacity: 0.7;
+			transform: none;
 		}
 	}
 
-	/* リスト: DADS リストの余白 */
-	.article-body :global(ol),
-	.article-body :global(ul) {
-		margin: calc(24 / 16 * 1rem) 0 0;
-		padding-left: calc(32 / 16 * 1rem);
+	/* リスト */
+	.prose :global(ol),
+	.prose :global(ul) {
+		margin: 1.4em 0 0;
+		padding-left: 1.6em;
 	}
 
-	.article-body :global(li + li),
-	.article-body :global(li > ol),
-	.article-body :global(li > ul) {
-		margin-top: calc(8 / 16 * 1rem);
+	.prose :global(li) {
+		padding-left: 0.2em;
 	}
 
-	.article-body :global(img) {
+	.prose :global(li + li),
+	.prose :global(li > ol),
+	.prose :global(li > ul) {
+		margin-top: 0.5em;
+	}
+
+	.prose :global(li::marker) {
+		color: var(--color-leaf-2);
+		font-family: var(--font-mono);
+		font-size: 0.88em;
+	}
+
+	/* 画像 */
+	.prose :global(img) {
+		display: block;
+		margin: 28px 0 0;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-lg);
+	}
+
+	/* 引用 */
+	.prose :global(blockquote) {
+		margin: 28px 0 0;
+		padding: 18px 24px;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		font-size: 0.96875rem;
+	}
+
+	.prose :global(blockquote > :first-child) {
+		margin-top: 0;
+	}
+
+	/* 区切り線 */
+	.prose :global(hr) {
+		margin: 56px 0;
+		border: 0;
+		border-top: 1px solid var(--color-line);
+	}
+
+	.prose :global(hr + *) {
+		margin-top: 0;
+	}
+
+	/* 表: 幅が足りなければ横にスクロールする */
+	.prose :global(table) {
 		display: block;
 		max-width: 100%;
-		height: auto;
-		margin: calc(24 / 16 * 1rem) 0 0;
-		border: 1px solid var(--color-border);
-		border-radius: var(--border-radius-8);
-	}
-
-	/* 引用: DADS 引用ブロック */
-	.article-body :global(blockquote) {
-		margin: calc(24 / 16 * 1rem) 0 0;
-		border-left: 8px solid var(--color-neutral-solid-gray-536);
-		padding: calc(8 / 16 * 1rem) calc(16 / 16 * 1rem) calc(8 / 16 * 1rem) calc(24 / 16 * 1rem);
-	}
-
-	.article-body :global(blockquote > :first-child) {
-		margin-top: 0;
-	}
-
-	/* 区切り線: DADS ディバイダー */
-	.article-body :global(hr) {
-		margin: calc(48 / 16 * 1rem) 0;
-		border: 0;
-		border-top: 1px solid var(--color-border);
-	}
-
-	.article-body :global(hr + *) {
-		margin-top: 0;
-	}
-
-	/* 表: DADS テーブル (列見出しはグレー背景) */
-	.article-body :global(table) {
-		width: 100%;
-		margin: calc(24 / 16 * 1rem) 0 0;
-		border-collapse: collapse;
-		font-size: var(--font-size-16);
-		line-height: var(--line-height-150);
-	}
-
-	.article-body :global(th),
-	.article-body :global(td) {
-		border: 1px solid var(--color-border);
-		padding: calc(12 / 16 * 1rem) calc(16 / 16 * 1rem);
-		text-align: left;
-		vertical-align: baseline;
-	}
-
-	.article-body :global(thead th) {
-		border-color: var(--color-neutral-solid-gray-500);
-		background-color: var(--color-neutral-solid-gray-100);
-		color: var(--color-text-strong);
-		font-weight: var(--font-weight-700);
-	}
-
-	/* 狭い画面では DADS テーブルの dense 相当まで詰める */
-	@media (max-width: 600px) {
-		.article-body :global(table) {
-			font-size: var(--font-size-14);
-		}
-
-		.article-body :global(th),
-		.article-body :global(td) {
-			padding: calc(8 / 16 * 1rem) calc(8 / 16 * 1rem);
-		}
-	}
-
-	/* コード */
-	.article-body :global(pre) {
-		margin: calc(24 / 16 * 1rem) 0 0;
+		margin: 28px 0 0;
 		overflow-x: auto;
-		border: 1px solid var(--color-border);
-		border-radius: var(--border-radius-8);
-		padding: calc(16 / 16 * 1rem) calc(20 / 16 * 1rem);
-		font-family: var(--font-family-mono);
-		font-size: var(--font-size-14);
-		line-height: var(--line-height-170);
-		letter-spacing: 0;
+		border: 1px solid var(--color-line);
+		border-radius: 12px;
+		border-collapse: separate;
+		border-spacing: 0;
+		font-size: 0.90625rem;
+		line-height: 1.6;
 	}
 
-	.article-body :global(pre code) {
-		font-family: inherit;
+	.prose :global(th),
+	.prose :global(td) {
+		padding: 12px 16px;
+		border-bottom: 1px solid var(--color-line);
+		text-align: left;
+		vertical-align: top;
 	}
 
-	.article-body :global(:not(pre) > code) {
-		border: 1px solid var(--color-border-subtle);
-		border-radius: var(--border-radius-4);
-		background: var(--color-bg-subtle);
-		padding: 0.1em 0.4em;
-		color: var(--color-text-strong);
-		font-family: var(--font-family-mono);
-		font-size: 0.875em;
+	.prose :global(th) {
+		background: var(--color-surface);
+		color: var(--color-ink);
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.prose :global(tbody tr:last-child td) {
+		border-bottom: 0;
+	}
+
+	.prose :global(tbody tr) {
+		transition: background-color var(--dur-instant) var(--ease-standard);
+	}
+
+	@media (hover: hover) {
+		.prose :global(tbody tr:hover) {
+			background: var(--color-surface);
+		}
+	}
+
+	/* インラインコード */
+	.prose :global(:not(pre) > code) {
+		padding: 0.14em 0.42em;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface-2);
+		color: var(--color-ink);
+		font-family: var(--font-mono);
+		font-size: 0.86em;
 		letter-spacing: 0;
 		-webkit-box-decoration-break: clone;
 		box-decoration-break: clone;
+	}
+
+	/* ---- コードブロック (src/markdown/code-block-transformer.mjs が組み立てる) ---- */
+	.prose :global(.code-block) {
+		margin: 28px 0 0;
+		overflow: hidden;
+		border: 1px solid var(--color-code-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-code-bg);
+		color: var(--color-code-ink);
+	}
+
+	.prose :global(.code-block__head) {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-height: 46px;
+		padding: 0 10px 0 16px;
+		border-bottom: 1px solid var(--color-code-border);
+	}
+
+	.prose :global(.code-block__lang) {
+		padding: 2px 8px;
+		border-radius: 5px;
+		background: var(--color-code-chip);
+		color: #9aa6a2;
+		font: 500 0.6875rem/1.6 var(--font-mono);
+	}
+
+	.prose :global(.code-block__title) {
+		overflow: hidden;
+		color: var(--color-code-ink);
+		font: 400 0.78125rem/1.6 var(--font-mono);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.prose :global(.code-block__copy) {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		min-height: 32px;
+		margin-left: auto;
+		padding: 0 10px;
+		border: 1px solid #2c3539;
+		border-radius: 7px;
+		background: var(--color-code-chip);
+		color: var(--color-code-ink);
+		font: 500 0.75rem var(--font-sans);
+		cursor: pointer;
+		transition:
+			background-color var(--dur-fast) var(--ease-standard),
+			border-color var(--dur-fast) var(--ease-standard),
+			color var(--dur-fast) var(--ease-standard);
+	}
+
+	.prose :global(.code-block__copy[hidden]) {
+		display: none;
+	}
+
+	@media (hover: hover) {
+		.prose :global(.code-block__copy:hover) {
+			background: #222b2f;
+		}
+	}
+
+	.prose :global(.code-block__icons) {
+		display: grid;
+		width: 14px;
+		height: 14px;
+	}
+
+	.prose :global(.code-block__copy .icon) {
+		grid-area: 1 / 1;
+		width: 14px;
+		height: 14px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition:
+			transform var(--dur-fast) var(--ease-out),
+			opacity var(--dur-fast) var(--ease-out);
+	}
+
+	.prose :global(.code-block__copy .icon-check) {
+		stroke-width: 1.8;
+		opacity: 0;
+		transform: scale(0.4) rotate(-45deg);
+	}
+
+	.prose :global(.code-block__copy .icon-check path) {
+		stroke-dasharray: 20;
+		stroke-dashoffset: 20;
+	}
+
+	.prose :global(.code-block__copy[data-copied]) {
+		border-color: #2f6b4e;
+		background: #14231c;
+		color: #7ad7a8;
+	}
+
+	.prose :global(.code-block__copy[data-copied] .icon-copy) {
+		opacity: 0;
+		transform: scale(0.4);
+	}
+
+	.prose :global(.code-block__copy[data-copied] .icon-check) {
+		opacity: 1;
+		transform: none;
+	}
+
+	.prose :global(.code-block__copy[data-copied] .icon-check path) {
+		animation: draw-check 320ms var(--ease-out) 60ms forwards;
+	}
+
+	@keyframes draw-check {
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	.prose :global(pre) {
+		margin: 0;
+		padding: 14px 0 16px;
+		overflow-x: auto;
+		/* Shiki がインラインで指定する背景色を、テーマに合わせて上書きする */
+		background-color: var(--color-code-bg) !important;
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		line-height: 1.85;
+		letter-spacing: 0;
+		tab-size: 2;
+	}
+
+	.prose :global(pre:focus-visible) {
+		outline-offset: -3px;
+		border-radius: 0;
+	}
+
+	.prose :global(pre code) {
+		display: grid;
+		width: max-content;
+		min-width: 100%;
+		font-family: inherit;
+		counter-reset: line;
+	}
+
+	.prose :global(pre .line) {
+		display: block;
+		min-height: 1lh;
+		padding-right: 18px;
+	}
+
+	/* 行番号（コピーや選択には含まれない） */
+	.prose :global(pre .line)::before {
+		display: inline-block;
+		width: 2.5em;
+		margin-right: 16px;
+		color: var(--color-code-muted);
+		text-align: right;
+		content: counter(line);
+		counter-increment: line;
+		user-select: none;
+	}
+
+	/* ハイライト行: 画面に入ると左から色が引かれる */
+	.prose :global(pre .line.highlighted) {
+		background: linear-gradient(rgb(85 198 143 / 0.14), rgb(85 198 143 / 0.14)) 0 0 / 100% 100%
+			no-repeat;
+		box-shadow: inset 3px 0 0 #55c68f;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.prose :global(pre .line.highlighted) {
+				animation: highlight-in linear both;
+				animation-timing-function: var(--ease-out);
+				animation-timeline: view();
+				animation-range: entry 40% cover 35%;
+			}
+		}
+	}
+
+	@keyframes highlight-in {
+		from {
+			background-size: 0% 100%;
+		}
+	}
+
+	@media (max-width: 720px) {
+		.prose {
+			font-size: 1rem;
+			line-height: 1.9;
+		}
+
+		.prose :global(h2) {
+			margin-top: 56px;
+			font-size: 1.4375rem;
+		}
+
+		.prose :global(h3) {
+			font-size: 1.1875rem;
+		}
+
+		.prose :global(.code-block) {
+			margin-right: calc(-1 * var(--layout-gutter));
+			margin-left: calc(-1 * var(--layout-gutter));
+			border-right: 0;
+			border-left: 0;
+			border-radius: 0;
+		}
+
+		.prose :global(pre) {
+			font-size: 0.8125rem;
+		}
+	}
+
+	/* ---- 記事の終わり ---- */
+	.article-end {
+		max-width: var(--measure-body);
+		margin-top: 72px;
+	}
+
+	.done {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin: 0;
+		padding: 20px 24px;
+		border: 1px dashed var(--color-line-2);
+		border-radius: var(--radius-lg);
+		color: var(--color-muted);
+		font-size: 0.9375rem;
+		line-height: 1.7;
+		transition:
+			border-color var(--dur-base) var(--ease-out),
+			background-color var(--dur-base) var(--ease-out),
+			color var(--dur-base) var(--ease-out);
+	}
+
+	.done-icon {
+		flex: none;
+		width: 28px;
+		height: 28px;
+		fill: none;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.done-icon circle {
+		stroke: var(--color-line-2);
+		stroke-width: 2;
+		transition: stroke var(--dur-base) var(--ease-out);
+	}
+
+	.done-icon path {
+		stroke: var(--color-leaf);
+		stroke-width: 2.4;
+		stroke-dasharray: 16;
+		stroke-dashoffset: 16;
+	}
+
+	.done[data-state='done'] {
+		border-style: solid;
+		border-color: var(--color-leaf);
+		background: var(--color-leaf-soft);
+		color: var(--color-ink);
+	}
+
+	.done[data-state='done'] .done-icon circle {
+		stroke: var(--color-leaf);
+	}
+
+	.done[data-state='done'] .done-icon path {
+		animation: draw-check 420ms var(--ease-out) 120ms forwards;
+	}
+
+	.pager {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 16px;
+		margin-top: 24px;
+	}
+
+	.pager-card:any-link {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 20px 22px;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-lg);
+		color: var(--color-ink);
+		text-decoration: none;
+		transition:
+			transform var(--dur-base) var(--ease-out),
+			border-color var(--dur-base) var(--ease-out),
+			box-shadow var(--dur-base) var(--ease-out);
+	}
+
+	.pager-card.is-next {
+		text-align: right;
+	}
+
+	.pager-label,
+	.pager-date {
+		color: var(--color-muted);
+		font-size: 0.75rem;
+	}
+
+	.pager-title {
+		font-size: 0.96875rem;
+		font-weight: 700;
+		line-height: 1.6;
+	}
+
+	.underline {
+		background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat;
+		-webkit-box-decoration-break: clone;
+		box-decoration-break: clone;
+		transition: background-size var(--dur-base) var(--ease-out);
+	}
+
+	@media (hover: hover) {
+		.pager-card:hover {
+			border-color: var(--color-leaf);
+			transform: translateY(-3px);
+			box-shadow: var(--shadow-lift);
+		}
+
+		.pager-card:hover .underline {
+			background-size: 100% 2px;
+		}
+	}
+
+	.pager-empty {
+		display: flex;
+		align-items: center;
+		margin: 0;
+		padding: 20px 22px;
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		color: var(--color-muted);
+		font-size: 0.875rem;
+	}
+
+	@media (max-width: 720px) {
+		.pager {
+			grid-template-columns: minmax(0, 1fr);
+		}
 	}
 </style>

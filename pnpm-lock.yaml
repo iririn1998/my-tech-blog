@@ -11,9 +11,6 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.7.3
         version: 3.7.3
-      '@digital-go-jp/design-tokens':
-        specifier: ^2.1.0
-        version: 2.1.0
       astro:
         specifier: ^7.1.1
         version: 7.1.1(@emnapi/core@1.11.2)(@emnapi/runtime@1.11.2)(@types/node@24.13.3)(yaml@2.9.0)
@@ -286,9 +283,6 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
-
-  '@digital-go-jp/design-tokens@2.1.0':
-    resolution: {integrity: sha512-cf3Ir+DwxXgkRhFwq4cbDzktdvIsvkxo6ryJ1LMj6xUOT1ldLi6r1QvYHrXLVK54Y/IWVaOeqdsZiNlzijm94g==}
 
   '@emmetio/abbreviation@2.3.3':
     resolution: {integrity: sha512-mgv58UrU3rh4YgbE/TzgLQwJ3pFsHHhCLqY20aJq+9comytTXUDNGG/SMtSeMJdkpxgXSXunBGLD8Boka3JyVA==}
@@ -3226,8 +3220,6 @@ snapshots:
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
-
-  '@digital-go-jp/design-tokens@2.1.0': {}
 
   '@emmetio/abbreviation@2.3.3':
     dependencies:

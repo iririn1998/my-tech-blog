@@ -1,0 +1,121 @@
+---
+/**
+ * トップページのヒーローに置く、12×12 のドット絵のりんご（装飾）。
+ * 各セルは (行 + 列) に比例した遅延で一度だけ現れる。ホバーしたセルは少し浮く。
+ */
+const MAP = [
+	'............',
+	'.......LL...',
+	'......SLLL..',
+	'......S.....',
+	'..RRR..RRR..',
+	'.RRRRRRRRRR.',
+	'.RHHRRRRRRR.',
+	'.RHRRRRRRRR.',
+	'.RRRRRRRRRR.',
+	'.RRRRRRRRRR.',
+	'..RRRRRRRR..',
+	'...RR..RR...',
+];
+
+const KIND: Record<string, string> = { R: 'apple', H: 'highlight', L: 'leaf', S: 'stem' };
+
+const cells = MAP.flatMap((row, r) =>
+	[...row].map((char, c) => ({
+		kind: KIND[char] ?? 'empty',
+		delay: `${380 + (r + c) * 28}ms`,
+	})),
+);
+---
+
+<figure class="pixel-apple" aria-hidden="true">
+	<div class="grid">
+		{cells.map((cell) => <span class:list={['cell', cell.kind]} style={`--delay: ${cell.delay}`} />)}
+	</div>
+	<figcaption class="caption mono">// 12 × 12 grid · delay = (row + col) × 28ms</figcaption>
+</figure>
+
+<style>
+	.pixel-apple {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 18px;
+		margin: 0;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+		gap: 6px;
+		width: min(100%, 372px);
+	}
+
+	.cell {
+		display: grid;
+		place-items: center;
+		aspect-ratio: 1;
+		border-radius: 5px;
+		animation: pop 620ms var(--ease-out) var(--delay) both;
+		transition: transform var(--dur-fast) var(--ease-out);
+	}
+
+	.apple {
+		background: var(--color-apple);
+	}
+
+	.highlight {
+		background: var(--color-apple-highlight);
+	}
+
+	.leaf {
+		background: var(--color-leaf);
+	}
+
+	.stem {
+		background: var(--color-ink-2);
+	}
+
+	.empty::after {
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: var(--color-line-2);
+		content: '';
+	}
+
+	@media (hover: hover) {
+		.cell:not(.empty):hover {
+			transform: translateY(-3px);
+		}
+	}
+
+	/* transform はホバーに使うため、出現は個別プロパティの scale で動かす */
+	@keyframes pop {
+		from {
+			opacity: 0;
+			scale: 0.2;
+		}
+
+		to {
+			opacity: 1;
+			scale: 1;
+		}
+	}
+
+	.caption {
+		color: var(--color-muted);
+		font-size: 0.75rem;
+	}
+
+	@media (max-width: 900px) {
+		.pixel-apple {
+			align-items: flex-start;
+		}
+
+		.grid {
+			gap: 4px;
+			width: min(100%, 240px);
+		}
+	}
+</style>

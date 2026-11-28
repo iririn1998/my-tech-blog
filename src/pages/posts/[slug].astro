@@ -1,13 +1,30 @@
 ---
 import { getCollection, render } from 'astro:content';
 import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getReadingMinutes, getTitleTransitionName } from '../../utils/post';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+	const posts = (await getCollection('blog')).sort(
+		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+	);
+	return posts.map((post, i) => {
+		const newer = posts[i - 1];
+		const older = posts[i + 1];
+		const toAdjacent = (entry: (typeof posts)[number] | undefined) =>
+			entry && {
+				title: entry.data.title,
+				href: `/posts/${entry.id}/`,
+				date: entry.data.pubDate,
+				transitionName: getTitleTransitionName(entry.id),
+			};
+		return {
+			params: { slug: post.id },
+			props: { post, prev: toAdjacent(older), next: toAdjacent(newer) },
+		};
+	});
 }
 
-const { post } = Astro.props;
+const { post, prev, next } = Astro.props;
 const { Content, headings } = await render(post);
 const tocHeadings = headings
 	.filter((heading) => heading.depth === 2)
@@ -21,6 +38,10 @@ const tocHeadings = headings
 	tags={post.data.tags}
 	headings={tocHeadings}
 	showToc={post.data.showToc}
+	readingMinutes={getReadingMinutes(post.body)}
+	transitionName={getTitleTransitionName(post.id)}
+	prev={prev}
+	next={next}
 >
 	<Content />
 </ArticleLayout>

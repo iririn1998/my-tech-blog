@@ -1,84 +1,105 @@
 ---
 /**
- * 記事ページのヘッダー。タグ列 + タイトル + 公開日。先頭タグをキーカラーで表示する。
+ * 記事ページのヘッダー。タグ列 + タイトル + 抜粋 + 公開日・読了目安。
+ *
+ * タイトルには一覧と同じ view-transition-name を付け、一覧から開いたときはカードのタイトルが
+ * この見出しへ変形する。タイトル自体には出現アニメーションを付けない（遷移の動きと重なるため）。
  */
+import { formatFullDate, formatIsoDate } from '../../utils/date';
+import { getTagId } from '../../utils/tag';
+import Tag from '../Tag.astro';
+
 interface Props {
 	title: string;
 	date: Date | string;
 	tags: string[];
+	excerpt?: string;
+	readingMinutes?: number;
+	/** 目次に載る見出しの数 */
+	sectionCount?: number;
+	/** タイトルに付ける view-transition-name */
+	transitionName?: string;
 }
 
-import { formatFullDate, formatIsoDate } from '../../utils/date';
-import Tag from '../Tag.astro';
-
-const { title, date, tags } = Astro.props;
+const { title, date, tags, excerpt, readingMinutes, sectionCount, transitionName } = Astro.props;
 const publishedAt = new Date(date);
-const dateLabel = formatFullDate(publishedAt);
-const datetime = formatIsoDate(publishedAt);
 ---
 
 <header class="article-header">
-	<h1 class="title">{title}</h1>
-	<div class="meta">
-		<ul class="tags" aria-label="タグ">
-			{
-				tags.map((tag, i) => (
-					<li>
-						<Tag variant={i === 0 ? 'accent' : 'outline'}>{tag}</Tag>
-					</li>
-				))
-			}
-		</ul>
-		<p class="date">公開日：<time {datetime}>{dateLabel}</time></p>
-	</div>
+	<ul class="tags" aria-label="タグ">
+		{
+			tags.map((tag, i) => (
+				<li>
+					<Tag variant={i === 0 ? 'accent' : 'outline'} href={`/tags/#${getTagId(tag)}`}>
+						{tag}
+					</Tag>
+				</li>
+			))
+		}
+	</ul>
+	<h1
+		class="title"
+		data-article-title
+		style={transitionName ? `view-transition-name: ${transitionName}` : undefined}
+	>
+		{title}
+	</h1>
+	{excerpt && <p class="lead">{excerpt}</p>}
+	<p class="meta mono">
+		<span>公開日 <time datetime={formatIsoDate(publishedAt)}>{formatFullDate(publishedAt)}</time></span>
+		{readingMinutes && <span>読了目安 約{readingMinutes}分</span>}
+		{sectionCount ? <span>セクション {sectionCount}</span> : null}
+	</p>
 </header>
 
 <style>
 	.article-header {
-		padding: calc(32 / 16 * 1rem) 0 calc(32 / 16 * 1rem);
-		border-bottom: 1px solid var(--color-border);
-	}
-
-	/* DADS タイポグラフィ: Std-28B-150 → 広い画面では Std-36B-140 */
-	.title {
-		max-width: 28em;
-		margin: 0;
-		color: var(--color-text-strong);
-		font-size: var(--font-size-28);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-150);
-		letter-spacing: 0.01em;
-	}
-
-	@media (min-width: 768px) {
-		.title {
-			font-size: var(--font-size-36);
-			line-height: var(--line-height-140);
-		}
-	}
-
-	.meta {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: calc(12 / 16 * 1rem) calc(24 / 16 * 1rem);
-		margin-top: calc(24 / 16 * 1rem);
+		padding: 40px 0 44px;
+		border-bottom: 1px solid var(--color-line);
 	}
 
 	.tags {
 		display: flex;
 		flex-wrap: wrap;
-		gap: calc(8 / 16 * 1rem);
+		gap: 8px;
 		margin: 0;
 		padding: 0;
 		list-style: none;
+		animation: fade-up var(--dur-slow) var(--ease-out) both;
 	}
 
-	.date {
-		margin: 0;
-		color: var(--color-text-description);
-		font-size: var(--font-size-16);
-		line-height: var(--line-height-170);
+	.title {
+		max-width: 22em;
+		margin: 20px 0 0;
+		color: var(--color-ink);
+		font-size: clamp(1.875rem, 4vw, 2.875rem);
+		font-weight: 700;
+		line-height: 1.38;
+		letter-spacing: -0.005em;
+	}
+
+	.lead {
+		max-width: 42em;
+		margin: 20px 0 0;
+		color: var(--color-ink-2);
+		font-size: 1.0625rem;
+		line-height: 1.95;
+		animation: fade-up var(--dur-slow) var(--ease-out) 80ms both;
+	}
+
+	.meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 24px;
+		margin: 24px 0 0;
+		color: var(--color-muted);
+		font-size: 0.8125rem;
+		line-height: 1.6;
 		font-feature-settings: 'tnum' 1;
+		animation: fade-up var(--dur-slow) var(--ease-out) 140ms both;
+	}
+
+	.meta time {
+		color: var(--color-ink-2);
 	}
 </style>
