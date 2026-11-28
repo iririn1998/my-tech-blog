@@ -1,46 +1,465 @@
 ---
 /**
- * 記事ページの目次。DADS の「目次」コンポーネント (枠線あり) に準拠する。
- * デスクトップでは本文の横に sticky 配置する。
+ * 記事ページの目次。
+ *
+ * - 幅 1024px 以上: 本文の横に固定表示。読了率・読み終えた見出しのチェック・残り時間を示し、
+ *   読んでいる見出しに合わせてマーカーが滑る。
+ * - 幅 1023px 以下: 画面下の「目次」ボタンから、下からせり上がるシート (<dialog>) で開く。
+ *
+ * 現在地の判定・読了率の更新・シートの開閉は src/scripts/article.ts が行う。
+ * JavaScript が動かない場合も、目次はページ内リンクとして使える。
  */
 interface Props {
 	headings: { slug: string; text: string }[];
+	readingMinutes?: number;
 }
 
-const { headings } = Astro.props;
+const { headings, readingMinutes } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, '0');
+const total = pad(headings.length);
 ---
 
-<nav class="dads-toc toc" data-border="solid" aria-labelledby="toc-heading">
-	<h2 id="toc-heading" class="dads-toc__heading">目次</h2>
-	<ul class="dads-list" data-spacing="4">
-		{
-			headings.map((heading) => (
-				<li>
-					<a class="dads-link" href={`#${heading.slug}`}>
-						{heading.text}
-					</a>
-				</li>
-			))
-		}
-	</ul>
+<nav class="toc" aria-labelledby="toc-heading">
+	<div class="head">
+		<h2 id="toc-heading" class="heading">目次</h2>
+		<span class="percent mono" data-toc-percent aria-hidden="true">0%</span>
+	</div>
+	<div class="bar" aria-hidden="true"><span></span></div>
+	<div class="list-wrap" data-toc-list>
+		<span class="track" aria-hidden="true"></span>
+		<span class="marker" aria-hidden="true"></span>
+		<ol class="list">
+			{
+				headings.map((heading, i) => (
+					<li>
+						<a class="item" href={`#${heading.slug}`} data-toc-link={heading.slug}>
+							<span class="num mono">{pad(i + 1)}</span>
+							<span class="text">{heading.text}</span>
+							<svg class="check" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+								<path d="M3 8.5l3.2 3L13 4.5" />
+							</svg>
+						</a>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+	{
+		readingMinutes && (
+			<p class="rest" data-toc-rest>
+				残り 約{readingMinutes}分
+			</p>
+		)
+	}
 </nav>
 
+<button class="fab" type="button" data-toc-open aria-haspopup="dialog" aria-controls="toc-sheet">
+	<svg class="fab-ring" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+		<circle class="fab-track" cx="16" cy="16" r="13"></circle>
+		<circle class="fab-fill" cx="16" cy="16" r="13"></circle>
+	</svg>
+	<span>目次</span>
+	<span class="fab-position mono" data-toc-position>01 / {total}</span>
+</button>
+
+<dialog id="toc-sheet" class="sheet" aria-labelledby="toc-sheet-heading" data-toc-sheet>
+	<div class="sheet-inner">
+		<div class="grab" aria-hidden="true"></div>
+		<div class="sheet-head">
+			<h2 id="toc-sheet-heading" class="heading">
+				目次 <span class="percent mono" data-toc-percent>0%</span>
+			</h2>
+			<button class="close" type="button" data-toc-close aria-label="目次を閉じる">
+				<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+					<path d="M6 6l12 12M18 6 6 18"></path>
+				</svg>
+			</button>
+		</div>
+		<div class="bar" aria-hidden="true"><span></span></div>
+		<div class="list-wrap" data-toc-list>
+			<span class="track" aria-hidden="true"></span>
+			<span class="marker" aria-hidden="true"></span>
+			<ol class="list">
+				{
+					headings.map((heading, i) => (
+						<li style={`--i: ${i}`}>
+							<a class="item" href={`#${heading.slug}`} data-toc-link={heading.slug}>
+								<span class="num mono">{pad(i + 1)}</span>
+								<span class="text">{heading.text}</span>
+								<svg class="check" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+									<path d="M3 8.5l3.2 3L13 4.5" />
+								</svg>
+							</a>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+	</div>
+</dialog>
+
 <style>
+	/* ---- 本文横の目次 ---- */
 	.toc {
 		position: sticky;
-		top: calc(24 / 16 * 1rem);
-		width: auto;
-		border-radius: var(--border-radius-8);
-		background: var(--color-bg);
+		top: calc(var(--header-height) + 32px);
+		max-height: calc(100dvh - var(--header-height) - 64px);
+		padding-top: 40px;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		scrollbar-width: thin;
 	}
 
-	@media (max-width: 960px) {
-		.toc {
-			position: static;
+	.head,
+	.sheet-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.heading {
+		margin: 0;
+		color: var(--color-ink);
+		font-size: 0.875rem;
+		font-weight: 700;
+		line-height: 1.5;
+		letter-spacing: 0.08em;
+	}
+
+	.percent {
+		color: var(--color-leaf-2);
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0;
+	}
+
+	.bar {
+		height: 3px;
+		margin-top: 10px;
+		overflow: hidden;
+		border-radius: 2px;
+		background: var(--color-surface-2);
+	}
+
+	.bar span {
+		display: block;
+		height: 100%;
+		background: var(--color-leaf);
+		transform: scaleX(var(--read-progress, 0));
+		transform-origin: left;
+	}
+
+	.list-wrap {
+		position: relative;
+		margin-top: 16px;
+		padding-left: 18px;
+	}
+
+	.track {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		width: 2px;
+		border-radius: 1px;
+		background: var(--color-line);
+	}
+
+	/* 現在の見出しを示すマーカー。位置と高さ (--marker-y / --marker-h) は article.ts が設定する */
+	.marker {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 2px;
+		height: var(--marker-h, 0);
+		border-radius: 1px;
+		background: var(--color-leaf);
+		opacity: 0;
+		transform: translateY(var(--marker-y, 0));
+		transition:
+			transform var(--dur-base) var(--ease-standard),
+			height var(--dur-base) var(--ease-standard),
+			opacity var(--dur-fast) var(--ease-standard);
+	}
+
+	.list-wrap[data-has-current] .marker {
+		opacity: 1;
+	}
+
+	.list {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.item:any-link {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+		padding: 8px 0;
+		color: var(--color-ink-2);
+		font-size: 0.875rem;
+		line-height: 1.6;
+		text-decoration: none;
+		transition: color var(--dur-fast) var(--ease-standard);
+	}
+
+	.num {
+		flex: none;
+		width: 18px;
+		color: var(--color-muted);
+		font-size: 0.6875rem;
+		font-weight: 500;
+	}
+
+	.text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.check {
+		flex: none;
+		align-self: center;
+		width: 14px;
+		height: 14px;
+		fill: none;
+		stroke: var(--color-leaf-2);
+		stroke-width: 1.8;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		opacity: 0;
+		transform: scale(0.6);
+		transition:
+			opacity var(--dur-fast) var(--ease-out),
+			transform var(--dur-fast) var(--ease-out);
+	}
+
+	.item[data-state='read'] {
+		color: var(--color-muted);
+	}
+
+	.item[data-state='read'] .check {
+		opacity: 1;
+		transform: none;
+	}
+
+	.item[data-state='current'] {
+		color: var(--color-ink);
+		font-weight: 700;
+	}
+
+	.item[data-state='current'] .num {
+		color: var(--color-leaf-2);
+	}
+
+	@media (hover: hover) {
+		.item:hover {
+			color: var(--color-ink);
 		}
 	}
 
-	.dads-toc__heading {
-		font-weight: var(--font-weight-700);
+	.rest {
+		margin: 16px 0 0;
+		padding-top: 14px;
+		border-top: 1px solid var(--color-line);
+		color: var(--color-muted);
+		font-size: 0.78125rem;
+		line-height: 1.6;
+	}
+
+	/* ---- 狭い画面: 目次ボタン + シート ---- */
+	.fab {
+		position: fixed;
+		bottom: 22px;
+		left: 50%;
+		z-index: 35;
+		display: none;
+		align-items: center;
+		gap: 10px;
+		min-height: 48px;
+		padding: 0 18px 0 8px;
+		border: 1px solid var(--color-line);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+		color: var(--color-ink);
+		font: 700 0.875rem var(--font-sans);
+		box-shadow: 0 12px 28px -12px var(--color-shadow);
+		cursor: pointer;
+		transform: translateX(-50%);
+		transition: transform var(--dur-instant) var(--ease-standard);
+	}
+
+	.fab:active {
+		transform: translateX(-50%) scale(0.96);
+	}
+
+	.fab:focus-visible {
+		border-radius: 999px;
+	}
+
+	.fab-ring {
+		width: 32px;
+		height: 32px;
+		transform: rotate(-90deg);
+	}
+
+	.fab-track,
+	.fab-fill {
+		fill: none;
+		stroke-width: 3;
+	}
+
+	.fab-track {
+		stroke: var(--color-line);
+	}
+
+	.fab-fill {
+		stroke: var(--color-leaf);
+		stroke-linecap: round;
+		stroke-dasharray: 81.68;
+		stroke-dashoffset: calc(81.68px * (1 - var(--read-progress, 0)));
+	}
+
+	.fab-position {
+		color: var(--color-muted);
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
+	.sheet {
+		position: fixed;
+		inset: auto 0 0;
+		width: 100%;
+		max-width: none;
+		max-height: min(80dvh, 640px);
+		margin: 0;
+		padding: 0;
+		overflow: hidden auto;
+		border: 0;
+		border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+		background: var(--color-bg);
+		color: var(--color-ink);
+		box-shadow: 0 -12px 32px -12px var(--color-shadow);
+		transform: translateY(100%);
+		transition:
+			transform var(--dur-fast) var(--ease-in),
+			overlay var(--dur-fast) allow-discrete,
+			display var(--dur-fast) allow-discrete;
+	}
+
+	.sheet[open] {
+		transform: none;
+		transition:
+			transform 420ms var(--ease-out),
+			overlay 420ms allow-discrete,
+			display 420ms allow-discrete;
+	}
+
+	@starting-style {
+		.sheet[open] {
+			transform: translateY(100%);
+		}
+	}
+
+	.sheet::backdrop {
+		background: transparent;
+		transition:
+			background-color var(--dur-fast) var(--ease-in),
+			overlay var(--dur-fast) allow-discrete,
+			display var(--dur-fast) allow-discrete;
+	}
+
+	.sheet[open]::backdrop {
+		background: var(--color-backdrop);
+		transition:
+			background-color var(--dur-base) var(--ease-out),
+			overlay var(--dur-base) allow-discrete,
+			display var(--dur-base) allow-discrete;
+	}
+
+	@starting-style {
+		.sheet[open]::backdrop {
+			background: transparent;
+		}
+	}
+
+	.sheet-inner {
+		padding: 10px 20px 28px;
+	}
+
+	.grab {
+		width: 40px;
+		height: 4px;
+		margin: 0 auto 6px;
+		border-radius: 2px;
+		background: var(--color-line-2);
+	}
+
+	.sheet .heading {
+		font-size: 1rem;
+		letter-spacing: 0.02em;
+	}
+
+	.sheet .percent {
+		margin-left: 6px;
+	}
+
+	.close {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		margin-right: -10px;
+		border: 0;
+		border-radius: var(--radius-md);
+		background: none;
+		color: var(--color-ink-2);
+		cursor: pointer;
+	}
+
+	.close svg {
+		width: 18px;
+		height: 18px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+
+	.sheet .bar {
+		margin-top: 4px;
+	}
+
+	.sheet .list-wrap {
+		margin-top: 12px;
+		padding-left: 16px;
+	}
+
+	.sheet .item:any-link {
+		align-items: center;
+		min-height: 48px;
+		padding: 4px 0;
+		font-size: 0.9375rem;
+	}
+
+	.sheet[open] li {
+		animation: fade-up 360ms var(--ease-out) calc(var(--i) * 40ms + 140ms) both;
+	}
+
+	@media (max-width: 1023px) {
+		.toc {
+			display: none;
+		}
+
+		.fab {
+			display: inline-flex;
+		}
+	}
+
+	:global(html:has(.sheet[open])) {
+		overflow: hidden;
 	}
 </style>

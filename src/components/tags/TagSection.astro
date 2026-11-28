@@ -1,30 +1,38 @@
 ---
 /**
- * タグ別一覧ページの1タグ分の節。タグ見出し + 記事リスト (タイトル + 公開日)。
+ * タグ別一覧ページの 1 タグ分の節。タグ見出し + 記事リスト (タイトル + 公開日)。
+ * 画面に入ると一度だけ浮かび上がる。各行はホバーで背景が満ち、矢印が進む。
  */
+import { getTagId } from '../../utils/tag';
+
 interface Props {
 	name: string;
 	posts: { title: string; href: string; dateLabel: string; datetime: string }[];
 }
 
-import { getTagId } from '../../utils/tag';
-
 const { name, posts } = Astro.props;
 const id = getTagId(name);
 ---
 
-<section {id} class="tag-section" aria-labelledby={`${id}-heading`}>
-	<h2 id={`${id}-heading`} class="dads-heading heading" data-size="20" data-chip>
-		{name}<span class="count">{posts.length}記事</span>
+<section {id} class="tag-section reveal" aria-labelledby={`${id}-heading`}>
+	<h2 id={`${id}-heading`} class="heading">
+		<span class="hash mono" aria-hidden="true">#</span>{name}<span class="count mono"
+			>{posts.length}記事</span
+		>
 	</h2>
 	<ul class="list">
 		{
 			posts.map((post) => (
 				<li>
-					<a href={post.href}>{post.title}</a>
-					<time class="date" datetime={post.datetime}>
-						{post.dateLabel}
-					</time>
+					<a class="item" href={post.href}>
+						<span class="title">{post.title}</span>
+						<time class="date mono" datetime={post.datetime}>
+							{post.dateLabel}
+						</time>
+						<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<path d="M5 12h13M13 6.5 18.5 12 13 17.5" />
+						</svg>
+					</a>
 				</li>
 			))
 		}
@@ -33,49 +41,107 @@ const id = getTagId(name);
 
 <style>
 	.tag-section {
-		border: 1px solid var(--color-border);
-		border-radius: var(--border-radius-16);
-		padding: calc(24 / 16 * 1rem);
+		scroll-margin-top: calc(var(--header-height) + 24px);
+		padding: 24px;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-lg);
+		background: var(--color-bg);
+		transition: border-color var(--dur-base) var(--ease-out);
+	}
+
+	.tag-section:target {
+		border-color: var(--color-leaf);
 	}
 
 	.heading {
+		display: flex;
+		align-items: baseline;
+		gap: 6px;
 		margin: 0;
+		color: var(--color-ink);
+		font-size: 1.25rem;
+		font-weight: 700;
+		line-height: 1.5;
+	}
+
+	.hash {
+		color: var(--color-leaf-2);
 	}
 
 	.count {
-		margin-left: calc(12 / 16 * 1rem);
-		color: var(--color-text-description);
-		font-size: var(--font-size-14);
-		font-weight: var(--font-weight-400);
-		letter-spacing: 0;
+		margin-left: 8px;
+		color: var(--color-muted);
+		font-size: 0.75rem;
+		font-weight: 400;
 	}
 
 	.list {
-		margin: calc(16 / 16 * 1rem) 0 0;
+		margin: 12px -12px 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	.list li {
-		display: flex;
-		flex-direction: column;
-		gap: calc(4 / 16 * 1rem);
-		padding: calc(12 / 16 * 1rem) 0;
-	}
-
 	.list li + li {
-		border-top: 1px solid var(--color-border-subtle);
+		border-top: 1px solid var(--color-line);
 	}
 
-	.list li:last-child {
-		padding-bottom: 0;
+	.item:any-link {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 20px;
+		gap: 4px 12px;
+		align-items: center;
+		padding: 12px;
+		border-radius: var(--radius-md);
+		color: var(--color-ink);
+		text-decoration: none;
+		isolation: isolate;
+	}
+
+	.item::before {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		border-radius: inherit;
+		background: var(--color-surface);
+		content: '';
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform var(--dur-base) var(--ease-out);
+	}
+
+	.title {
+		font-weight: 500;
+		line-height: 1.6;
 	}
 
 	.date {
-		color: var(--color-text-description);
-		font-size: var(--font-size-14);
-		line-height: var(--line-height-130);
-		letter-spacing: 0;
+		grid-row: 2;
+		color: var(--color-muted);
+		font-size: 0.75rem;
 		font-feature-settings: 'tnum' 1;
+	}
+
+	.arrow {
+		grid-row: 1 / span 2;
+		grid-column: 2;
+		width: 18px;
+		height: 18px;
+		fill: none;
+		stroke: var(--color-leaf-2);
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: transform var(--dur-base) var(--ease-out);
+	}
+
+	@media (hover: hover) {
+		.item:hover::before {
+			transform: scaleX(1);
+		}
+
+		.item:hover .arrow {
+			transform: translateX(4px);
+		}
 	}
 </style>

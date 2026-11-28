@@ -1,8 +1,22 @@
 ---
 /**
- * サイト共通ヘッダー。サイト名 + 主要ナビゲーション。
- * ナビゲーションは DADS の「ヘッダーメニュー (水平)」に準拠し、現在ページを下線とキーカラーで示す。
+ * サイト共通ヘッダー。サイト名 + 主要ナビゲーション + テーマ切替。
+ *
+ * - 現在ページの下線は、ホバーした項目へ滑って移動する（:has() + transform、JS なし）。
+ * - 記事ページでは contextTitle を渡すと、読了バーを表示し、
+ *   記事タイトルを読み過ぎたあとにナビゲーションと記事タイトルを入れ替える（data-scrolled は article.ts が付与）。
+ * - 幅 601px 以上では画面上部に固定する。狭い画面ではサイト名とメニューを 2 段にして固定しない。
  */
+import BrandMark from './BrandMark.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+	/** 記事ページで、スクロール後にヘッダーへ表示する記事タイトル */
+	contextTitle?: string;
+}
+
+const { contextTitle } = Astro.props;
+
 const links = [
 	{ label: 'トップ', href: '/' },
 	{ label: 'タグ', href: '/tags/' },
@@ -16,44 +30,78 @@ function isActive(href: string): boolean {
 	const normalizedHref = href.replace(/\/$/, '');
 	return currentPath === normalizedHref || currentPath.startsWith(`${normalizedHref}/`);
 }
+
+const activeIndex = links.findIndex((link) => isActive(link.href));
 ---
 
-<header class="site-header">
+<header class="site-header" data-site-header>
 	<div class="inner">
-		<a class="brand" href="/">いりりんご🍎web牧場</a>
-		<nav aria-label="主要ナビゲーション">
-			<ul class="menu">
-				{
-					links.map((link) => (
-						<li>
-							<a
-								class="menu-link"
-								href={link.href}
-								aria-current={isActive(link.href) ? 'page' : undefined}
-							>
-								{link.label}
-							</a>
-						</li>
-					))
-				}
-			</ul>
-		</nav>
+		<a class="brand" href="/">
+			<span>いりりんご</span>
+			<BrandMark />
+			<span>web牧場</span>
+		</a>
+		<div class="center">
+			<nav class="menu" aria-label="主要ナビゲーション" data-active={activeIndex}>
+				<ul class="menu-list">
+					{
+						links.map((link, i) => (
+							<li>
+								<a
+									class="menu-link"
+									href={link.href}
+									aria-current={i === activeIndex ? 'page' : undefined}
+								>
+									{link.label}
+								</a>
+							</li>
+						))
+					}
+				</ul>
+				<span class="indicator" aria-hidden="true"></span>
+			</nav>
+			{
+				contextTitle && (
+					<p class="context-title" aria-hidden="true">
+						{contextTitle}
+					</p>
+				)
+			}
+		</div>
+		<div class="actions">
+			<ThemeToggle />
+		</div>
 	</div>
+	{contextTitle && <span class="progress" aria-hidden="true" />}
 </header>
 
 <style>
 	.site-header {
-		border-bottom: 1px solid var(--color-border);
+		--item-w: 88px;
+		position: relative;
+		z-index: 40;
+		border-bottom: 1px solid var(--color-line);
 		background: var(--color-bg);
+		view-transition-name: site-header;
+	}
+
+	@media (min-width: 601px) {
+		.site-header {
+			position: sticky;
+			top: 0;
+			background: color-mix(in srgb, var(--color-bg) 86%, transparent);
+			-webkit-backdrop-filter: saturate(1.4) blur(12px);
+			backdrop-filter: saturate(1.4) blur(12px);
+		}
 	}
 
 	.inner {
-		display: flex;
-		align-items: stretch;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		column-gap: calc(24 / 16 * 1rem);
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		column-gap: 24px;
 		max-width: var(--layout-max-width);
+		min-height: var(--header-height);
 		margin: 0 auto;
 		padding: 0 var(--layout-gutter);
 	}
@@ -61,103 +109,226 @@ function isActive(href: string): boolean {
 	.brand:any-link {
 		display: flex;
 		align-items: center;
-		min-height: calc(64 / 16 * 1rem);
-		color: var(--color-text-strong);
-		font-size: var(--font-size-22);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-150);
+		gap: 4px;
+		color: var(--color-ink);
+		font-size: 1.125rem;
+		font-weight: 700;
+		line-height: 1.5;
 		letter-spacing: 0.02em;
 		text-decoration: none;
 	}
 
-	@media (hover: hover) {
-		.brand:hover {
-			text-decoration: underline;
-			text-decoration-thickness: calc(3 / 16 * 1rem);
-		}
+	.center {
+		display: grid;
+		align-items: center;
+		justify-items: end;
+		min-width: 0;
+		height: var(--header-height);
+	}
+
+	.center > * {
+		grid-area: 1 / 1;
 	}
 
 	.menu {
+		position: relative;
+		transition:
+			opacity var(--dur-base) var(--ease-out),
+			transform var(--dur-base) var(--ease-out),
+			visibility 0s;
+	}
+
+	.menu-list {
 		display: flex;
-		align-items: stretch;
-		height: 100%;
 		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	.menu li {
-		display: flex;
-	}
-
 	.menu-link:any-link {
-		position: relative;
 		display: flex;
 		align-items: center;
-		min-height: calc(64 / 16 * 1rem);
-		padding: calc(16 / 16 * 1rem) calc(20 / 16 * 1rem);
-		color: var(--color-text-strong);
-		font-size: var(--font-size-16);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-130);
+		justify-content: center;
+		width: var(--item-w);
+		height: var(--header-height);
+		color: var(--color-ink-2);
+		font-size: 0.9375rem;
+		font-weight: 500;
+		line-height: 1.3;
 		letter-spacing: 0;
 		text-decoration: none;
 		white-space: nowrap;
+		transition: color var(--dur-fast) var(--ease-standard);
+	}
+
+	.menu-link[aria-current='page'] {
+		color: var(--color-ink);
+		font-weight: 700;
 	}
 
 	@media (hover: hover) {
 		.menu-link:hover {
-			background: var(--color-bg-subtle);
+			color: var(--color-ink);
 		}
-
-		.menu-link:hover::after {
-			position: absolute;
-			right: 0;
-			bottom: 0;
-			left: 0;
-			border-bottom: 2px solid var(--color-neutral-black);
-			content: '';
-		}
-	}
-
-	.menu-link[aria-current='page'] {
-		color: var(--color-key-1000);
-	}
-
-	.menu-link[aria-current='page']::after {
-		position: absolute;
-		right: 0;
-		bottom: 0;
-		left: 0;
-		border-bottom: 4px solid var(--color-key-900);
-		content: '';
 	}
 
 	.menu-link:focus-visible {
-		outline-offset: calc(-4 / 16 * 1rem);
-		background: var(--color-primitive-yellow-300);
+		outline-offset: -4px;
 	}
 
-	/* 狭い画面ではサイト名とメニューを2段にする */
+	/* 下線インジケーター: 現在ページの位置 → ホバーした項目へ滑る */
+	.indicator {
+		position: absolute;
+		bottom: -1px;
+		left: 0;
+		display: flex;
+		justify-content: center;
+		width: var(--item-w);
+		height: 3px;
+		pointer-events: none;
+		transform: translateX(calc(var(--x, 0) * var(--item-w)));
+		transition:
+			transform var(--dur-base) var(--ease-out),
+			opacity var(--dur-fast) var(--ease-standard);
+	}
+
+	.indicator::before {
+		width: 36px;
+		height: 3px;
+		border-radius: 2px;
+		background: var(--color-leaf);
+		content: '';
+	}
+
+	.menu[data-active='-1'] .indicator {
+		opacity: 0;
+	}
+
+	.menu[data-active='1'] {
+		--x: 1;
+	}
+
+	.menu[data-active='2'] {
+		--x: 2;
+	}
+
+	@media (hover: hover) {
+		.menu:has(li:nth-child(1) .menu-link:hover) {
+			--x: 0;
+		}
+
+		.menu:has(li:nth-child(2) .menu-link:hover) {
+			--x: 1;
+		}
+
+		.menu:has(li:nth-child(3) .menu-link:hover) {
+			--x: 2;
+		}
+
+		.menu:has(.menu-link:hover) .indicator {
+			opacity: 1;
+		}
+	}
+
+	@media (forced-colors: active) {
+		.indicator::before {
+			background: CanvasText;
+		}
+	}
+
+	/* 記事ページ: スクロール後はナビゲーションと記事タイトルを入れ替える */
+	.context-title {
+		justify-self: center;
+		max-width: min(100%, 560px);
+		margin: 0;
+		overflow: hidden;
+		color: var(--color-ink);
+		font-size: 0.9rem;
+		font-weight: 700;
+		line-height: 1.5;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(14px);
+		transition:
+			opacity var(--dur-fast) var(--ease-in),
+			transform var(--dur-fast) var(--ease-in),
+			visibility 0s linear var(--dur-fast);
+	}
+
+	@media (min-width: 601px) {
+		.site-header[data-scrolled] .context-title {
+			opacity: 1;
+			visibility: visible;
+			transform: none;
+			transition:
+				opacity var(--dur-base) var(--ease-out),
+				transform var(--dur-base) var(--ease-out),
+				visibility 0s;
+		}
+
+		.site-header[data-scrolled] .menu {
+			opacity: 0;
+			visibility: hidden;
+			transform: translateY(-14px);
+			transition:
+				opacity var(--dur-fast) var(--ease-in),
+				transform var(--dur-fast) var(--ease-in),
+				visibility 0s linear var(--dur-fast);
+		}
+	}
+
+	/* 読了バー: --read-progress (0〜1) は article.ts がスクロールに合わせて更新する */
+	.progress {
+		position: absolute;
+		bottom: -1px;
+		left: 0;
+		width: 100%;
+		height: 3px;
+		background: var(--color-leaf);
+		transform: scaleX(var(--read-progress, 0));
+		transform-origin: left;
+	}
+
+	/* 狭い画面ではサイト名とメニューを 2 段にする */
 	@media (max-width: 600px) {
 		.inner {
+			grid-template-columns: minmax(0, 1fr) auto;
 			padding: 0;
 		}
 
 		.brand:any-link {
-			min-height: calc(56 / 16 * 1rem);
-			padding: 0 var(--layout-gutter);
-			font-size: var(--font-size-20);
+			min-height: 56px;
+			padding-left: var(--layout-gutter);
+			font-size: 1.0625rem;
 		}
 
-		nav {
-			flex-basis: 100%;
-			border-top: 1px solid var(--color-border-subtle);
+		.actions {
+			padding-right: calc(var(--layout-gutter) - 4px);
+		}
+
+		.center {
+			grid-row: 2;
+			grid-column: 1 / -1;
+			justify-items: start;
+			height: 48px;
+			border-top: 1px solid var(--color-line);
 		}
 
 		.menu-link:any-link {
-			min-height: calc(48 / 16 * 1rem);
-			padding: calc(12 / 16 * 1rem) var(--layout-gutter);
+			height: 48px;
+		}
+
+		.context-title {
+			display: none;
+		}
+
+		.progress {
+			position: fixed;
+			top: 0;
+			bottom: auto;
+			z-index: 50;
 		}
 	}
 </style>

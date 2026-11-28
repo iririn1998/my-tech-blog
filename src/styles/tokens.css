@@ -1,43 +1,115 @@
 /*
- * デザイントークン
+ * デザイントークン — Quiet Motion
  *
- * デジタル庁デザインシステム (DADS) の公式トークン (@digital-go-jp/design-tokens) を読み込み、
- * その上にキーカラーとサイト内で使う役割名を定義する。
- * 色や文字サイズの値はここで直接決めず、必ず DADS のトークンを参照する。
+ * 色・文字・動き・レイアウトの値はすべてここで定義し、コンポーネントからは役割名で参照する。
+ * 色は「リーフ（操作・現在地・進捗）」と「アップル（ロゴと要所の強調のみ）」の 2 色。
+ * アップルはエラー表現と混同しないよう、本文やリンクには使わない。
+ *
+ * テーマは <html data-theme="light|dark"> で切り替える。
+ * JavaScript が動かない環境では OS の設定 (prefers-color-scheme) に従う。
  */
-@import '@digital-go-jp/design-tokens/dist/tokens.css';
 
 :root {
-	/*
-	 * キーカラー (DADS の既定は blue)。
-	 * DADS のコンポーネント CSS は --color-key-* を参照するので、
-	 * 別の色相にしたい場合はここの primitive 名だけを差し替える。
-	 */
-	--color-key-50: var(--color-primitive-blue-50);
-	--color-key-100: var(--color-primitive-blue-100);
-	--color-key-200: var(--color-primitive-blue-200);
-	--color-key-300: var(--color-primitive-blue-300);
-	--color-key-400: var(--color-primitive-blue-400);
-	--color-key-500: var(--color-primitive-blue-500);
-	--color-key-600: var(--color-primitive-blue-600);
-	--color-key-700: var(--color-primitive-blue-700);
-	--color-key-800: var(--color-primitive-blue-800);
-	--color-key-900: var(--color-primitive-blue-900);
-	--color-key-1000: var(--color-primitive-blue-1000);
-	--color-key-1100: var(--color-primitive-blue-1100);
-	--color-key-1200: var(--color-primitive-blue-1200);
+	color-scheme: light;
 
-	/* 役割別の色 */
-	--color-bg: var(--color-neutral-white);
-	--color-bg-subtle: var(--color-neutral-solid-gray-50);
-	--color-text-body: var(--color-neutral-solid-gray-800);
-	--color-text-strong: var(--color-neutral-solid-gray-900);
-	--color-text-description: var(--color-neutral-solid-gray-600);
-	--color-border: var(--color-neutral-solid-gray-420);
-	--color-border-subtle: var(--color-neutral-solid-gray-200);
+	/* 色 */
+	--color-bg: #ffffff;
+	--color-surface: #f5f6f3;
+	--color-surface-2: #ebeee9;
+	--color-ink: #15181b;
+	--color-ink-2: #3b4147;
+	--color-muted: #5d646b;
+	--color-line: #e1e4de;
+	--color-line-2: #c8cdc5;
+	--color-leaf: #1e7a52;
+	--color-leaf-2: #15613f;
+	--color-leaf-soft: #e2f1e8;
+	--color-apple: #d9423b;
+	--color-apple-ink: #b8352e;
+	--color-apple-soft: #fbe8e6;
+	--color-apple-highlight: #f4a49d;
+	--color-code-bg: #111618;
+	--color-code-border: #232b2f;
+	--color-code-ink: #c9d2ce;
+	--color-code-muted: #62706b;
+	--color-code-chip: #1a2124;
+	--color-shadow: rgb(21 24 27 / 0.3);
+	--color-backdrop: rgb(10 12 14 / 0.42);
+
+	/* 文字 */
+	--font-sans:
+		'IBM Plex Sans JP', system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+	/* 動き: 時間 */
+	--dur-instant: 120ms; /* 色・下線の変化 */
+	--dur-fast: 200ms; /* タグ・ボタン・コピー完了 */
+	--dur-base: 320ms; /* カードのホバー・目次マーカー */
+	--dur-slow: 560ms; /* スクロール出現・ページ遷移 */
+
+	/* 動き: 加減速 */
+	--ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* 出現・展開 */
+	--ease-standard: cubic-bezier(0.4, 0, 0.2, 1); /* 状態の変化 */
+	--ease-in: cubic-bezier(0.5, 0, 0.75, 0); /* 退場 */
+
+	/* 形 */
+	--radius-sm: 6px;
+	--radius-md: 10px;
+	--radius-lg: 14px;
+	--radius-xl: 20px;
+	--shadow-lift: 0 14px 28px -14px var(--color-shadow);
 
 	/* レイアウト */
 	--layout-max-width: 1200px;
 	--layout-gutter: clamp(16px, 4vw, 40px);
-	--measure-body: 42em;
+	--measure-body: 720px;
+	--header-height: 64px;
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--color-bg: #0e1113;
+	--color-surface: #161a1d;
+	--color-surface-2: #1f2427;
+	--color-ink: #e9edea;
+	--color-ink-2: #c4cbc7;
+	--color-muted: #959e9a;
+	--color-line: #262c30;
+	--color-line-2: #3a4247;
+	--color-leaf: #55c68f;
+	--color-leaf-2: #7ad7a8;
+	--color-leaf-soft: #173225;
+	--color-apple: #ff6b61;
+	--color-apple-ink: #ff8a82;
+	--color-apple-soft: #3a1a18;
+	--color-apple-highlight: #ff9c94;
+	--color-code-bg: #080a0b;
+	--color-code-border: #262c30;
+	--color-shadow: rgb(0 0 0 / 0.6);
+	--color-backdrop: rgb(0 0 0 / 0.56);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		color-scheme: dark;
+		--color-bg: #0e1113;
+		--color-surface: #161a1d;
+		--color-surface-2: #1f2427;
+		--color-ink: #e9edea;
+		--color-ink-2: #c4cbc7;
+		--color-muted: #959e9a;
+		--color-line: #262c30;
+		--color-line-2: #3a4247;
+		--color-leaf: #55c68f;
+		--color-leaf-2: #7ad7a8;
+		--color-leaf-soft: #173225;
+		--color-apple: #ff6b61;
+		--color-apple-ink: #ff8a82;
+		--color-apple-soft: #3a1a18;
+		--color-apple-highlight: #ff9c94;
+		--color-code-bg: #080a0b;
+		--color-code-border: #262c30;
+		--color-shadow: rgb(0 0 0 / 0.6);
+		--color-backdrop: rgb(0 0 0 / 0.56);
+	}
 }

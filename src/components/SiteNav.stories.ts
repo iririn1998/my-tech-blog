@@ -11,3 +11,9 @@ const meta = {
 export default meta;
 
 export const Default = {};
+
+export const WithContextTitle = {
+	args: {
+		contextTitle: 'TypeScriptの循環importを理解して直す',
+	},
+};

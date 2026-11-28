@@ -1,160 +1,316 @@
 ---
 /**
- * トップページの特集記事。テキスト + 画像の横長カード (狭い画面では画像が上)。
+ * トップページの特集記事。テキスト + 記事の frontmatter を映したエディター風のビジュアル。
+ * カード全体がリンク。ホバーで枠がリーフ色になり、タイトルに下線、矢印とエディターが少し動く。
  * 見出しは呼び出し側のセクション見出しの下に置く想定で h3 を使う。
  */
-interface Props {
-	title: string;
-	excerpt: string;
-	tag: string;
-	href: string;
-	date?: Date | string;
-	imageSrc?: string;
-}
-
 import { formatFullDate, formatIsoDate } from '../../utils/date';
 import Tag from '../Tag.astro';
 
-const { title, excerpt, tag, href, date, imageSrc } = Astro.props;
-const publishedAt = date ? new Date(date) : undefined;
+interface Props {
+	title: string;
+	excerpt: string;
+	tags: string[];
+	href: string;
+	date: Date | string;
+	/** エディターのタブに表示するファイル名 (例: "posts/example.md") */
+	fileName: string;
+	readingMinutes?: number;
+	/** タイトルに付ける view-transition-name */
+	transitionName?: string;
+}
+
+const { title, excerpt, tags, href, date, fileName, readingMinutes, transitionName } = Astro.props;
+const publishedAt = new Date(date);
+const isoDate = formatIsoDate(publishedAt);
 ---
 
-<article class="featured">
+<a class="featured reveal" href={href}>
 	<div class="body">
 		<div class="meta">
-			<Tag variant="accent">{tag}</Tag>
-			{
-				publishedAt && (
-					<time class="date" datetime={formatIsoDate(publishedAt)}>
-						{formatFullDate(publishedAt)}
-					</time>
-				)
-			}
+			{tags.map((tag, i) => <Tag variant={i === 0 ? 'accent' : 'outline'}>{tag}</Tag>)}
+			<span class="date mono">
+				<time datetime={isoDate}>{formatFullDate(publishedAt)}</time>
+				{readingMinutes && <span> · 約{readingMinutes}分</span>}
+			</span>
 		</div>
-		<h3 class="title"><a href={href}>{title}</a></h3>
+		<h3
+			class="title"
+			style={transitionName ? `view-transition-name: ${transitionName}` : undefined}
+		>
+			<span class="underline">{title}</span>
+		</h3>
 		<p class="excerpt">{excerpt}</p>
-		<p class="more">
-			<a class="dads-button" data-size="md" data-type="solid-fill" href={href}>
-				続きを読む<span class="dads-u-visually-hidden">：{title}</span>
-			</a>
-		</p>
+		<span class="cta">
+			続きを読む
+			<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+				<path d="M5 12h13M13 6.5 18.5 12 13 17.5"></path>
+			</svg>
+		</span>
 	</div>
-	<div class="media">
-		{
-			imageSrc ? (
-				<img src={imageSrc} alt="" loading="lazy" decoding="async" />
-			) : (
-				<span class="placeholder">画像なし</span>
-			)
-		}
+	<div class="visual" aria-hidden="true">
+		<div class="editor">
+			<div class="editor-head">
+				<span class="dots"><span></span><span></span><span></span></span>
+				<span class="file mono">{fileName}</span>
+			</div>
+			<div class="editor-body mono">
+				<span class="ln"><span class="punct">---</span></span>
+				<span class="ln"><span class="key">title</span>: <span class="str">{title}</span></span>
+				<span class="ln"
+					><span class="key">tags</span>: [{
+						tags.map((tag, i) => (
+							<>
+								{i > 0 && ', '}
+								<span class="str">{tag}</span>
+							</>
+						))
+					}]</span
+				>
+				<span class="ln"><span class="key">pubDate</span>: <span class="num">{isoDate}</span></span>
+				<span class="ln"><span class="key">featured</span>: <span class="num">true</span></span>
+				<span class="ln"><span class="punct">---</span><span class="caret"></span></span>
+			</div>
+		</div>
 	</div>
-</article>
+</a>
 
 <style>
-	.featured {
+	.featured:any-link {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-areas:
-			'media'
-			'body';
+		grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
 		overflow: hidden;
-		border: 1px solid var(--color-border);
-		border-radius: var(--border-radius-16);
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-xl);
 		background: var(--color-bg);
+		color: var(--color-ink);
+		text-decoration: none;
+		transition:
+			border-color var(--dur-base) var(--ease-out),
+			transform var(--dur-base) var(--ease-out),
+			box-shadow var(--dur-base) var(--ease-out);
 	}
 
-	@media (min-width: 800px) {
-		.featured {
-			grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-			grid-template-areas: 'body media';
-		}
+	.featured:focus-visible {
+		border-radius: var(--radius-xl);
 	}
 
 	.body {
-		grid-area: body;
-		padding: calc(24 / 16 * 1rem);
-	}
-
-	@media (min-width: 800px) {
-		.body {
-			align-self: center;
-			padding: calc(40 / 16 * 1rem);
-		}
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 18px;
+		padding: 48px;
 	}
 
 	.meta {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: calc(8 / 16 * 1rem) calc(16 / 16 * 1rem);
+		gap: 8px;
 	}
 
 	.date {
-		color: var(--color-text-description);
-		font-size: var(--font-size-14);
-		line-height: var(--line-height-130);
-		letter-spacing: 0;
+		margin-left: 6px;
+		color: var(--color-muted);
+		font-size: 0.78125rem;
 		font-feature-settings: 'tnum' 1;
 	}
 
-	/* DADS タイポグラフィ: Std-24B-150 → 広い画面では Std-28B-150 */
 	.title {
-		margin: calc(16 / 16 * 1rem) 0 0;
-		font-size: var(--font-size-24);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-150);
-		letter-spacing: 0.02em;
+		margin: 0;
+		font-size: clamp(1.5rem, 2.6vw, 2rem);
+		font-weight: 700;
+		line-height: 1.45;
 	}
 
-	@media (min-width: 800px) {
-		.title {
-			font-size: var(--font-size-28);
-			letter-spacing: 0.01em;
-		}
-	}
-
-	.title a:any-link {
-		color: var(--color-text-strong);
+	.underline {
+		background: linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat;
+		-webkit-box-decoration-break: clone;
+		box-decoration-break: clone;
+		transition: background-size var(--dur-base) var(--ease-out);
 	}
 
 	.excerpt {
-		margin: calc(16 / 16 * 1rem) 0 0;
-		font-size: var(--font-size-16);
-		line-height: var(--line-height-170);
+		margin: 0;
+		color: var(--color-ink-2);
+		font-size: 1rem;
+		line-height: 1.9;
 	}
 
-	.more {
-		margin: calc(24 / 16 * 1rem) 0 0;
+	.cta {
+		display: inline-flex;
+		align-self: flex-start;
+		align-items: center;
+		gap: 8px;
+		min-height: 44px;
+		padding: 0 18px;
+		border-radius: var(--radius-md);
+		background: var(--color-ink);
+		color: var(--color-bg);
+		font-size: 0.90625rem;
+		font-weight: 700;
 	}
 
-	.media {
-		grid-area: media;
+	.arrow {
+		width: 18px;
+		height: 18px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: transform var(--dur-base) var(--ease-out);
+	}
+
+	/* エディター風ビジュアル */
+	.visual {
 		display: grid;
 		place-items: center;
-		aspect-ratio: 3 / 2;
-		border-bottom: 1px solid var(--color-border);
-		background: var(--color-bg-subtle);
+		padding: 40px 32px;
+		border-left: 1px solid var(--color-line);
+		background-color: var(--color-surface);
+		background-image: radial-gradient(var(--color-line-2) 1px, transparent 1.2px);
+		background-size: 18px 18px;
 	}
 
-	@media (min-width: 800px) {
-		.media {
-			aspect-ratio: auto;
-			min-height: 100%;
-			border-bottom: 0;
-			border-left: 1px solid var(--color-border);
+	.editor {
+		width: min(100%, 360px);
+		overflow: hidden;
+		border: 1px solid var(--color-code-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-code-bg);
+		color: var(--color-code-ink);
+		box-shadow: 0 18px 36px -22px var(--color-shadow);
+		transition: transform var(--dur-base) var(--ease-out);
+	}
+
+	.editor-head {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		height: 38px;
+		padding: 0 14px;
+		border-bottom: 1px solid var(--color-code-border);
+	}
+
+	.dots {
+		display: flex;
+		gap: 6px;
+	}
+
+	.dots span {
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: #3a4247;
+	}
+
+	.dots span:first-child {
+		background: #ff6b61;
+	}
+
+	.file {
+		overflow: hidden;
+		color: #9aa6a2;
+		font-size: 0.75rem;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.editor-body {
+		display: flex;
+		flex-direction: column;
+		padding: 14px 16px 16px;
+		font-size: 0.78125rem;
+		line-height: 1.9;
+	}
+
+	.ln {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+
+	.key {
+		color: #9cc9ff;
+	}
+
+	.str {
+		color: #f2b880;
+	}
+
+	.num {
+		color: #ffb3ad;
+	}
+
+	.punct {
+		color: #7d8a86;
+	}
+
+	.caret {
+		display: inline-block;
+		width: 7px;
+		height: 1.1em;
+		margin-left: 4px;
+		background: #7ad7a8;
+		vertical-align: -0.2em;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			.ln {
+				animation: fade-up linear both;
+				animation-timing-function: var(--ease-out);
+				animation-timeline: view();
+				animation-range: entry 20% cover 35%;
+			}
 		}
 	}
 
-	.media img {
-		display: block;
-		width: 100%;
-		height: 100%;
-		max-height: calc(320 / 16 * 1rem);
-		object-fit: contain;
+	@media (hover: hover) {
+		.featured:hover {
+			border-color: var(--color-leaf);
+			transform: translateY(-2px);
+			box-shadow: 0 20px 40px -24px var(--color-shadow);
+		}
+
+		.featured:hover .underline {
+			background-size: 100% 2px;
+		}
+
+		.featured:hover .arrow {
+			transform: translateX(4px);
+		}
+
+		.featured:hover .editor {
+			transform: translateY(-4px);
+		}
+
+		.featured:hover .caret {
+			animation: blink 1s steps(1) infinite;
+		}
 	}
 
-	.placeholder {
-		color: var(--color-text-description);
-		font-size: var(--font-size-14);
+	@keyframes blink {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	@media (max-width: 900px) {
+		.featured:any-link {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.body {
+			padding: 28px 24px;
+		}
+
+		.visual {
+			padding: 28px 20px;
+			border-top: 1px solid var(--color-line);
+			border-left: 0;
+		}
 	}
 </style>

@@ -12,6 +12,10 @@ export const Default = {
 		title: 'React Server Components を実務に導入して分かったこと',
 		date: '2026-07-18',
 		tags: ['React', '設計'],
+		excerpt:
+			'半年間の運用で見えてきた、RSC の設計指針と落とし穴を整理します。データ取得の境界をどこに引くか、クライアントコンポーネントをどう最小化するか。',
+		readingMinutes: 15,
+		sectionCount: 5,
 	},
 };
 

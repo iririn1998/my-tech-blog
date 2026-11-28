@@ -1,15 +1,13 @@
 @import './tokens.css';
-@import './dads/breadcrumb.css';
-@import './dads/button.css';
-@import './dads/chip-label.css';
-@import './dads/heading.css';
-@import './dads/link.css';
-@import './dads/list.css';
-@import './dads/toc.css';
 
 /*
  * ベーススタイル
- * リンク・フォーカスリングは DADS コードスニペットの global.css に準拠する。
+ *
+ * モーション原則
+ * 1. 本文は動かさない（記事本文・コード・画像は表示後に動かさない）
+ * 2. 動きは状態を伝えるときだけ（ホバー・現在地・進捗・完了）
+ * 3. 速く、一度だけ（操作への反応は 200ms 以内、出現は初回のみ）
+ * 4. いつでも減らせる（prefers-reduced-motion では即時切り替え）
  */
 
 *,
@@ -20,21 +18,28 @@
 
 html {
 	scrollbar-gutter: stable;
-	scroll-padding-top: calc(24 / 16 * 1rem);
-	font-family: var(--font-family-sans);
+	scroll-padding-top: calc(var(--header-height) + 24px);
+	font-family: var(--font-sans);
 	-webkit-text-size-adjust: 100%;
 	text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
 }
 
 body {
 	margin: 0;
 	min-width: 320px;
 	background: var(--color-bg);
-	color: var(--color-text-body);
-	font-size: var(--font-size-16);
-	line-height: var(--line-height-170);
+	color: var(--color-ink);
+	font-size: 1rem;
+	line-height: 1.8;
 	letter-spacing: 0.02em;
 	overflow-wrap: break-word;
+	-webkit-font-smoothing: antialiased;
 }
 
 img {
@@ -43,36 +48,30 @@ img {
 }
 
 :where(a):any-link {
-	color: var(--color-primitive-blue-1000);
+	color: var(--color-leaf-2);
 	text-decoration: underline;
-	text-decoration-thickness: calc(1 / 16 * 1rem);
-	text-underline-offset: calc(3 / 16 * 1rem);
-}
-
-:where(a):visited {
-	color: var(--color-primitive-magenta-900);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
 }
 
 @media (hover: hover) {
 	:where(a):hover {
-		color: var(--color-primitive-blue-900);
-		text-decoration-thickness: calc(3 / 16 * 1rem);
+		text-decoration-thickness: 2px;
 	}
 }
 
-:where(a):active {
-	color: var(--color-primitive-orange-800);
-	text-decoration-thickness: calc(1 / 16 * 1rem);
-}
-
 :focus-visible {
-	outline: calc(4 / 16 * 1rem) solid var(--color-neutral-black);
-	outline-offset: calc(2 / 16 * 1rem);
-	border-radius: calc(4 / 16 * 1rem);
-	box-shadow: 0 0 0 calc(2 / 16 * 1rem) var(--color-primitive-yellow-300);
+	outline: 3px solid var(--color-leaf);
+	outline-offset: 2px;
+	border-radius: 4px;
 }
 
-.dads-u-visually-hidden {
+::selection {
+	background: var(--color-leaf-soft);
+	color: var(--color-ink);
+}
+
+.visually-hidden {
 	clip: rect(0 0 0 0) !important;
 	clip-path: inset(50%) !important;
 	height: 1px !important;
@@ -80,4 +79,195 @@ img {
 	position: absolute !important;
 	white-space: nowrap !important;
 	width: 1px !important;
+}
+
+.mono {
+	font-family: var(--font-mono);
+	letter-spacing: 0;
+}
+
+/*
+ * 下線ワイプのリンク
+ * 常に細い下線でリンクと分かる状態を保ち、ホバーで太い下線が左から伸びる。
+ * background を使うので、折り返したリンクでも各行に下線が引かれる。
+ */
+.link-wipe:any-link {
+	color: var(--color-leaf-2);
+	text-decoration: none;
+	background:
+		linear-gradient(currentColor, currentColor) 0 100% / 0 2px no-repeat,
+		linear-gradient(currentColor, currentColor) 0 100% / 100% 1px no-repeat;
+	padding-bottom: 2px;
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+	transition: background-size var(--dur-fast) var(--ease-standard);
+}
+
+@media (hover: hover) {
+	.link-wipe:hover {
+		background-size:
+			100% 2px,
+			100% 1px;
+	}
+}
+
+/* ---- 共通キーフレーム ---- */
+
+@keyframes fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+/*
+ * スクロールで一度だけ浮かび上がる要素。
+ * Scroll-driven Animations 対応ブラウザでのみ動き、未対応なら最初から表示される。
+ */
+@media (prefers-reduced-motion: no-preference) {
+	@supports (animation-timeline: view()) {
+		.reveal {
+			animation: fade-up linear both;
+			animation-timing-function: var(--ease-out);
+			animation-timeline: view();
+			animation-range: entry 0% entry 80%;
+		}
+	}
+}
+
+/* ---- ページ遷移 (View Transitions) ---- */
+
+@view-transition {
+	navigation: auto;
+}
+
+::view-transition-group(*) {
+	animation-duration: var(--dur-slow);
+	animation-timing-function: var(--ease-out);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: var(--dur-fast);
+}
+
+/* テーマ切替: 押したボタンを中心に新しいテーマが円形に広がる */
+html.is-theme-switching * {
+	view-transition-name: none !important;
+}
+
+html.is-theme-switching::view-transition-old(root) {
+	animation: none;
+}
+
+html.is-theme-switching::view-transition-new(root) {
+	animation: theme-reveal var(--dur-slow) var(--ease-standard);
+}
+
+@keyframes theme-reveal {
+	from {
+		clip-path: circle(0 at var(--reveal-x, 100%) var(--reveal-y, 0));
+	}
+
+	to {
+		clip-path: circle(var(--reveal-r, 150vmax) at var(--reveal-x, 100%) var(--reveal-y, 0));
+	}
+}
+
+/* ---- トースト (src/scripts/toast.ts が生成する) ---- */
+
+.toast-region {
+	position: fixed;
+	right: 0;
+	bottom: 28px;
+	left: 0;
+	z-index: 60;
+	display: flex;
+	justify-content: center;
+	pointer-events: none;
+}
+
+.toast {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 42px;
+	padding: 0 18px;
+	border-radius: 999px;
+	background: var(--color-ink);
+	color: var(--color-bg);
+	font-size: 0.875rem;
+	box-shadow: 0 12px 28px -12px var(--color-shadow);
+	animation: toast-in var(--dur-fast) var(--ease-out) both;
+}
+
+.toast[data-state='out'] {
+	animation: toast-out var(--dur-fast) var(--ease-in) both;
+}
+
+.toast svg {
+	width: 16px;
+	height: 16px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 1.8;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+@keyframes toast-in {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes toast-out {
+	from {
+		opacity: 1;
+		transform: none;
+	}
+
+	to {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+}
+
+/* ---- モーション軽減 ---- */
+
+@media (prefers-reduced-motion: reduce) {
+	@view-transition {
+		navigation: none;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 1ms !important;
+		animation-iteration-count: 1 !important;
+		animation-delay: 0ms !important;
+		transition-duration: 1ms !important;
+		transition-delay: 0ms !important;
+	}
 }

@@ -1,7 +1,6 @@
 ---
 /**
- * パンくずリスト。DADS の「パンくずリスト」コンポーネントのマークアップに準拠する。
- * 先頭は常に「トップ」。items の最後の要素を現在ページとして扱う。
+ * パンくずリスト。先頭は常に「トップ」。items の最後の要素を現在ページとして扱う。
  */
 interface Props {
 	items: { label: string; href?: string }[];
@@ -12,40 +11,61 @@ const trail = [{ label: 'トップ', href: '/' }, ...items];
 const labelId = 'breadcrumb-label';
 ---
 
-<nav class="dads-breadcrumb" aria-labelledby={labelId}>
-	<span id={labelId} class="dads-u-visually-hidden">現在位置</span>
-	<p class="dads-breadcrumb__list">
+<nav class="breadcrumb" aria-labelledby={labelId}>
+	<span id={labelId} class="visually-hidden">現在位置</span>
+	<ol class="list">
 		{
 			trail.map((item, i) =>
 				i < trail.length - 1 && item.href ? (
-					<span class="dads-breadcrumb__item">
-						<a class="dads-breadcrumb__link" href={item.href}>
+					<li class="item">
+						<a class="link-wipe" href={item.href}>
 							{item.label}
 						</a>
-						<span class="dads-breadcrumb__separator">
-							<svg
-								class="dads-breadcrumb__separator-icon"
-								width="12"
-								height="12"
-								viewBox="0 0 12 12"
-								aria-hidden="true"
-							>
-								<path d="M4.5 11L4 10.5L8 6.5L4 2.5L4.5 2L9 6.5L4.5 11Z" fill="currentcolor" />
-							</svg>
-						</span>
-					</span>
+						<svg class="separator" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+							<path d="M4.5 2.5 8 6l-3.5 3.5" />
+						</svg>
+					</li>
 				) : (
-					<span class="dads-breadcrumb__item" aria-current="page">
+					<li class="item" aria-current="page">
 						{item.label}
-					</span>
+					</li>
 				),
 			)
 		}
-	</p>
+	</ol>
 </nav>
 
 <style>
-	.dads-breadcrumb {
-		padding-top: calc(16 / 16 * 1rem);
+	.breadcrumb {
+		padding-top: 24px;
+	}
+
+	.list {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 4px 10px;
+		margin: 0;
+		padding: 0;
+		color: var(--color-muted);
+		font-size: 0.84375rem;
+		line-height: 1.6;
+		list-style: none;
+	}
+
+	.item {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.separator {
+		width: 12px;
+		height: 12px;
+		fill: none;
+		stroke: var(--color-line-2);
+		stroke-width: 1.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
 	}
 </style>

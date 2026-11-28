@@ -1,0 +1,57 @@
+---
+/**
+ * トップページなどのセクション見出し。番号 (01, 02…) + 見出し + 任意の補足リンク (default スロット)。
+ */
+interface Props {
+	/** 見出しの前に表示する番号 (例: "01") */
+	index: string;
+	/** h2 の id。セクションの aria-labelledby から参照する */
+	id: string;
+	title: string;
+}
+
+const { index, id, title } = Astro.props;
+const hasAside = Astro.slots.has('default');
+---
+
+<div class="section-heading">
+	<span class="index mono" aria-hidden="true">{index}</span>
+	<h2 id={id} class="title">{title}</h2>
+	{
+		hasAside && (
+			<div class="aside">
+				<slot />
+			</div>
+		)
+	}
+</div>
+
+<style>
+	.section-heading {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 8px 14px;
+		margin-bottom: 28px;
+	}
+
+	.index {
+		color: var(--color-leaf-2);
+		font-size: 0.8125rem;
+		letter-spacing: 0.06em;
+	}
+
+	.title {
+		margin: 0;
+		color: var(--color-ink);
+		font-size: 1.625rem;
+		font-weight: 700;
+		line-height: 1.4;
+	}
+
+	.aside {
+		margin-left: auto;
+		font-size: 0.875rem;
+		font-weight: 500;
+	}
+</style>

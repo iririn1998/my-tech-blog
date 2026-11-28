@@ -1,6 +1,7 @@
 ---
 /**
  * 一覧・固定ページの見出し。ページタイトル (h1) + 任意のリード文 (default スロット)。
+ * 表示時に一度だけ下からフェードインする。
  */
 interface Props {
 	title: string;
@@ -23,31 +24,26 @@ const hasLead = Astro.slots.has('default');
 
 <style>
 	.page-header {
-		padding: calc(32 / 16 * 1rem) 0 calc(40 / 16 * 1rem);
+		padding: 40px 0 48px;
 	}
 
-	/* DADS タイポグラフィ: Std-28B-150 → 広い画面では Std-36B-140 */
 	.title {
 		margin: 0;
-		color: var(--color-text-strong);
-		font-size: var(--font-size-28);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-150);
-		letter-spacing: 0.01em;
-	}
-
-	@media (min-width: 768px) {
-		.title {
-			font-size: var(--font-size-36);
-			line-height: var(--line-height-140);
-		}
+		color: var(--color-ink);
+		font-size: clamp(1.875rem, 4vw, 2.75rem);
+		font-weight: 700;
+		line-height: 1.38;
+		letter-spacing: -0.005em;
+		animation: fade-up var(--dur-slow) var(--ease-out) both;
 	}
 
 	.lead {
-		max-width: var(--measure-body);
-		margin-top: calc(16 / 16 * 1rem);
-		font-size: var(--font-size-16);
-		line-height: var(--line-height-170);
+		max-width: 42em;
+		margin-top: 20px;
+		color: var(--color-ink-2);
+		font-size: 1.0625rem;
+		line-height: 1.95;
+		animation: fade-up var(--dur-slow) var(--ease-out) 80ms both;
 	}
 
 	.lead :global(p) {
@@ -55,6 +51,6 @@ const hasLead = Astro.slots.has('default');
 	}
 
 	.lead :global(p + p) {
-		margin-top: calc(16 / 16 * 1rem);
+		margin-top: 16px;
 	}
 </style>

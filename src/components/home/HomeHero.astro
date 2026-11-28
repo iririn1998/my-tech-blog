@@ -1,53 +1,185 @@
 ---
 /**
- * トップページのヒーロー。サイトタイトル + リード文。
+ * トップページのヒーロー。
+ * ターミナル風の 1 行がタイピングされ、見出しが下からせり上がり、リード文とタグが続く。
+ * 演出は同じタブで初めてトップを開いたときの一度だけ（2 回目以降は最初から表示）。
  */
+import { getTagId } from '../../utils/tag';
+import Tag from '../Tag.astro';
+import PixelApple from './PixelApple.astro';
+
+interface Props {
+	/** ヒーローに表示するタグ（記事数の多い順を想定） */
+	tags?: { name: string; count: number }[];
+}
+
+const { tags = [] } = Astro.props;
 ---
 
 <header class="hero">
-	<h1 class="title">いりりんご🍎web牧場</h1>
-	<p class="lead">
-		都内でエンジニアをしている、いりりんの個人技術ブログです。試したことや作ったものを書き留めています。
-	</p>
+	<script is:inline>
+		(() => {
+			const hero = document.currentScript?.parentElement;
+			try {
+				if (sessionStorage.getItem('intro-played')) hero?.setAttribute('data-intro', 'played');
+				else sessionStorage.setItem('intro-played', '1');
+			} catch {}
+		})();
+	</script>
+	<div class="text">
+		<p class="prompt mono" aria-hidden="true">
+			<span class="typed"><span class="path">~/web-ranch</span> $ cat about.md</span><span
+				class="caret"></span>
+		</p>
+		<h1 class="title">
+			<span class="line"><span>試して、つまずいて、</span></span>
+			<span class="line"><span>直したことを<em class="mark">書く</em>。</span></span>
+		</h1>
+		<p class="lead">
+			都内でエンジニアをしている、いりりんの個人技術ブログです。Web
+			フロントエンドを中心に、試したことや作ったものを書き留めています。
+		</p>
+		{
+			tags.length > 0 && (
+				<ul class="tags" aria-label="よく書いているタグ">
+					{tags.map((tag) => (
+						<li>
+							<Tag href={`/tags/#${getTagId(tag.name)}`} count={tag.count}>
+								{tag.name}
+							</Tag>
+						</li>
+					))}
+				</ul>
+			)
+		}
+	</div>
+	<PixelApple />
 </header>
 
 <style>
 	.hero {
-		padding: calc(56 / 16 * 1rem) 0 calc(48 / 16 * 1rem);
+		display: grid;
+		grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+		gap: 64px;
+		align-items: center;
+		padding: 88px 0 96px;
 	}
 
-	/* DADS タイポグラフィ: Std-32B-150 → 広い画面では Dsp-48B-140 */
+	.prompt {
+		display: flex;
+		align-items: center;
+		margin: 0 0 22px;
+		color: var(--color-muted);
+		font-size: 0.875rem;
+		line-height: 1.6;
+	}
+
+	.typed {
+		display: inline-block;
+		width: 26ch;
+		overflow: hidden;
+		white-space: nowrap;
+		animation: type 900ms steps(26) 200ms both;
+	}
+
+	@keyframes type {
+		from {
+			width: 0;
+		}
+	}
+
+	.path {
+		color: var(--color-leaf-2);
+	}
+
+	.caret {
+		display: inline-block;
+		width: 8px;
+		height: 1.1em;
+		margin-left: 2px;
+		background: var(--color-leaf);
+		animation: blink 1s steps(1) 4;
+	}
+
+	@keyframes blink {
+		50% {
+			opacity: 0;
+		}
+	}
+
 	.title {
 		margin: 0;
-		color: var(--color-text-strong);
-		font-size: var(--font-size-32);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-150);
-		letter-spacing: 0.01em;
+		color: var(--color-ink);
+		font-size: clamp(1.875rem, 4.6vw, 3.5rem);
+		font-weight: 700;
+		line-height: 1.3;
+		letter-spacing: -0.01em;
+	}
+
+	.line {
+		display: block;
+		padding-bottom: 0.08em;
+		overflow: hidden;
+	}
+
+	.line > span {
+		display: inline-block;
+		animation: line-up 900ms var(--ease-out) 450ms both;
+	}
+
+	.line + .line > span {
+		animation-delay: 570ms;
+	}
+
+	@keyframes line-up {
+		from {
+			transform: translateY(105%);
+		}
+	}
+
+	.mark {
+		background: linear-gradient(var(--color-leaf-soft), var(--color-leaf-soft)) 0 90% / 100% 40%
+			no-repeat;
+		font-style: normal;
+		animation: mark 700ms var(--ease-out) 1200ms both;
+	}
+
+	@keyframes mark {
+		from {
+			background-size: 0% 40%;
+		}
 	}
 
 	.lead {
-		max-width: var(--measure-body);
-		margin: calc(16 / 16 * 1rem) 0 0;
-		font-size: var(--font-size-16);
-		line-height: var(--line-height-170);
+		max-width: 34em;
+		margin: 28px 0 0;
+		color: var(--color-ink-2);
+		font-size: 1.0625rem;
+		line-height: 1.95;
+		animation: fade-up 640ms var(--ease-out) 800ms both;
 	}
 
-	@media (min-width: 768px) {
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 28px 0 0;
+		padding: 0;
+		list-style: none;
+		animation: fade-up 640ms var(--ease-out) 920ms both;
+	}
+
+	/* 2 回目以降の表示では演出を省略する */
+	.hero[data-intro='played'] :is(.typed, .caret, .line > span, .mark, .lead, .tags),
+	.hero[data-intro='played'] :global(.cell) {
+		animation: none;
+	}
+
+	@media (max-width: 900px) {
 		.hero {
-			padding: calc(80 / 16 * 1rem) 0 calc(64 / 16 * 1rem);
-		}
-
-		.title {
-			font-size: var(--font-size-48);
-			line-height: var(--line-height-140);
-			letter-spacing: 0;
-		}
-
-		.lead {
-			margin-top: calc(24 / 16 * 1rem);
-			font-size: var(--font-size-18);
-			line-height: var(--line-height-160);
+			grid-template-columns: minmax(0, 1fr);
+			gap: 44px;
+			padding: 48px 0 64px;
 		}
 	}
 </style>

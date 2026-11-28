@@ -1,35 +1,29 @@
 ---
 /**
- * タグ。DADS の「チップラベル」を使い、3バリアント + 任意でリンク化・件数表示する。
- * - accent: キーカラーの塗り (記事の主タグ)
+ * タグ。3 バリアント + 任意でリンク化・件数表示する。
+ * - accent: リーフ色の淡い塗り (記事の主タグ)
  * - outline: グレーの枠線 (その他のタグ)
  * - neutral: グレーの塗り (「特集」などの補足ラベル)
- * リンク化した場合は、ラベルであることと区別できるようタグ名に下線を付ける。
+ * リンク化した場合は、ホバーで淡い緑が左から満ち、枠線の色も変わる（色の違いだけに頼らない）。
  */
 interface Props {
 	variant?: 'accent' | 'outline' | 'neutral';
 	href?: string;
-	/** タグ名の後ろに件数バッジを表示する */
+	/** タグ名の後ろに件数を表示する */
 	count?: number;
 }
 
 const { variant = 'outline', href, count } = Astro.props;
-
-const chipAttrs = {
-	accent: { 'data-style': 'filled-1', 'data-color': 'blue' },
-	outline: { 'data-style': 'outlined', 'data-color': 'gray' },
-	neutral: { 'data-style': 'filled-1', 'data-color': 'gray' },
-}[variant];
 const Element = href ? 'a' : 'span';
 ---
 
-<Element class:list={['dads-chip-label', 'tag', { 'tag-link': href }]} href={href} {...chipAttrs}>
+<Element class:list={['tag', variant, { 'is-link': href }]} href={href}>
 	<span class="label"><slot /></span>
 	{
 		count !== undefined && (
-			<span class="count">
+			<span class="count mono">
 				{count}
-				<span class="dads-u-visually-hidden">件</span>
+				<span class="visually-hidden">件</span>
 			</span>
 		)
 	}
@@ -37,41 +31,95 @@ const Element = href ? 'a' : 'span';
 
 <style>
 	.tag {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 26px;
+		padding: 1px 11px;
+		overflow: hidden;
+		border: 1px solid transparent;
+		border-radius: 999px;
+		font-size: 0.78125rem;
+		font-weight: 500;
+		line-height: 1.4;
+		letter-spacing: 0.02em;
 		white-space: nowrap;
-	}
-
-	.tag-link {
 		text-decoration: none;
+		isolation: isolate;
 	}
 
-	.tag-link .label {
-		text-decoration: underline;
-		text-decoration-thickness: calc(1 / 16 * 1rem);
-		text-underline-offset: calc(3 / 16 * 1rem);
+	.accent {
+		background: var(--color-leaf-soft);
+		color: var(--color-leaf-2);
+	}
+
+	.outline {
+		border-color: var(--color-line-2);
+		color: var(--color-ink-2);
+	}
+
+	.neutral {
+		background: var(--color-surface-2);
+		color: var(--color-ink-2);
+	}
+
+	.is-link:any-link {
+		min-height: 36px;
+		padding: 0 14px;
+		font-size: 0.84375rem;
+		transition:
+			color var(--dur-fast) var(--ease-standard),
+			border-color var(--dur-fast) var(--ease-standard);
+	}
+
+	.accent.is-link:any-link {
+		color: var(--color-leaf-2);
+	}
+
+	.outline.is-link:any-link,
+	.neutral.is-link:any-link {
+		color: var(--color-ink-2);
+	}
+
+	.is-link::before {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background: var(--color-leaf-soft);
+		content: '';
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform var(--dur-fast) var(--ease-standard);
+	}
+
+	.accent.is-link::before {
+		background: color-mix(in srgb, var(--color-leaf) 20%, transparent);
 	}
 
 	@media (hover: hover) {
-		.tag-link:hover {
-			background-color: var(--color-key-50);
+		.is-link:hover {
+			border-color: var(--color-leaf);
 		}
 
-		.tag-link:hover .label {
-			text-decoration-thickness: calc(3 / 16 * 1rem);
+		.outline.is-link:hover,
+		.neutral.is-link:hover {
+			color: var(--color-leaf-2);
+		}
+
+		.is-link:hover::before {
+			transform: scaleX(1);
 		}
 	}
 
+	.is-link:focus-visible {
+		border-radius: 999px;
+	}
+
 	.count {
-		position: relative;
-		min-width: 1.5em;
-		margin-left: calc(6 / 16 * 1rem);
-		border-radius: var(--border-radius-full);
-		background: var(--color-neutral-solid-gray-100);
-		padding: calc(3 / 16 * 1rem) calc(6 / 16 * 1rem);
-		color: var(--color-text-strong);
-		font-size: var(--font-size-14);
-		line-height: 1;
-		letter-spacing: 0;
-		text-align: center;
+		color: var(--color-muted);
+		font-size: 0.6875rem;
+		font-weight: 500;
 		font-feature-settings: 'tnum' 1;
 	}
 </style>

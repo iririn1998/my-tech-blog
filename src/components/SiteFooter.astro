@@ -2,28 +2,60 @@
 /**
  * サイト共通フッター。
  */
+import BrandMark from './BrandMark.astro';
+
 const year = new Date().getFullYear();
+const links = [
+	{ label: 'トップ', href: '/' },
+	{ label: 'タグ', href: '/tags/' },
+	{ label: 'About', href: '/about/' },
+];
 ---
 
 <footer class="site-footer">
 	<div class="inner">
-		<p class="name">いりりんご🍎web牧場</p>
-		<p class="note">個人の技術記録です。記載内容は執筆時点のものです。</p>
-		<p class="copyright"><small>© {year} いりりんご🍎web牧場</small></p>
+		<div class="about">
+			<p class="name">
+				<span>いりりんご</span>
+				<BrandMark size={20} />
+				<span>web牧場</span>
+			</p>
+			<p class="note">個人の技術記録です。記載内容は執筆時点のものです。</p>
+		</div>
+		<nav aria-label="フッターナビゲーション">
+			<ul class="links">
+				{
+					links.map((link) => (
+						<li>
+							<a class="link-wipe" href={link.href}>
+								{link.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+		<p class="copyright mono">
+			<small>© {year} いりりんご web牧場 · Built with Astro · Deployed on Cloudflare Workers</small>
+		</p>
 	</div>
 </footer>
 
 <style>
 	.site-footer {
-		margin-top: calc(80 / 16 * 1rem);
-		border-top: 1px solid var(--color-border);
-		background: var(--color-bg-subtle);
+		margin-top: 96px;
+		border-top: 1px solid var(--color-line);
+		background: var(--color-surface);
 	}
 
 	.inner {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 24px 48px;
 		max-width: var(--layout-max-width);
 		margin: 0 auto;
-		padding: calc(40 / 16 * 1rem) var(--layout-gutter) calc(48 / 16 * 1rem);
+		padding: 48px var(--layout-gutter) 56px;
 	}
 
 	p {
@@ -31,23 +63,37 @@ const year = new Date().getFullYear();
 	}
 
 	.name {
-		color: var(--color-text-strong);
-		font-size: var(--font-size-17);
-		font-weight: var(--font-weight-700);
-		line-height: var(--line-height-170);
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		color: var(--color-ink);
+		font-size: 1.0625rem;
+		font-weight: 700;
+		line-height: 1.6;
 	}
 
 	.note {
-		margin-top: calc(8 / 16 * 1rem);
-		font-size: var(--font-size-16);
-		line-height: var(--line-height-170);
+		margin-top: 8px;
+		color: var(--color-ink-2);
+		font-size: 0.875rem;
+		line-height: 1.8;
+	}
+
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 24px;
+		margin: 0;
+		padding: 0;
+		font-size: 0.875rem;
+		list-style: none;
 	}
 
 	.copyright {
-		margin-top: calc(24 / 16 * 1rem);
-		color: var(--color-text-description);
-		font-size: var(--font-size-14);
-		line-height: var(--line-height-150);
+		flex-basis: 100%;
+		color: var(--color-muted);
+		font-size: 0.75rem;
+		line-height: 1.6;
 	}
 
 	.copyright small {
